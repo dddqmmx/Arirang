@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Arirang</string>
+    <string name="title_activity_clipboard_setting">ClipboardSettingActivity</string>
+    <string name="title_activity_language_settings">LanguageSettings</string>
+
+    <string name="nav_home">ホーム</string>
+    <string name="nav_settings">設定</string>
+    <string name="nav_user">ユーザー</string>
+    <string name="title_language">言語</string>
+
+    <string name="status_title">稼働状態</string>
+    <string name="status_normal">すべての機能が正常に動作しています</string>
+
+    <string name="category_permission">権限</string>
+    <string name="category_tamper">改ざん</string>
+    <string name="category_control">制御</string>
+    <string name="category_audit">監査</string>
+
+    <string name="feature_clipboard">クリップボード</string>
+    <string name="feature_sensor">センサー</string>
+
+    <string name="feature_device_info">端末情報</string>
+    <string name="feature_sim_info">SIM情報</string>
+    <string name="feature_location">位置情報</string>
+    <string name="feature_sensor_info">センサー情報</string>
+    <string name="feature_contacts">連絡先</string>
+    <string name="feature_app_list">アプリリスト</string>
+    <string name="feature_wifi_list">Wi-Fiリスト</string>
+    <string name="feature_bluetooth_list">Bluetoothリスト</string>
+
+    <string name="feature_background_network">バック通信</string>
+    <string name="feature_force_proxy">強制プロキシ</string>
+
+    <string name="feature_permission_stats">アプリの権限使用回数統計</string>
+
+    <string name="clipboard_permission_title">クリップボード読み取り権限</string>
+    <string name="package_list_config_title">アプリリスト読み取り権限</string>
+
+    <string name="hint_package_or_app_name">アプリ名で検索</string>
+
+    <string name="ui_settings_title">UI設定</string>
+
+    <string-array name="languages">
+        <item>デフォルト</item>
+        <item>中国語</item>
+        <item>日本語</item>
+    </string-array>
+</resources>

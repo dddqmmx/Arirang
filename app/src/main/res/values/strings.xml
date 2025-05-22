@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">Arirang</string>
+    <string name="title_activity_clipboard_setting">ClipboardSettingActivity</string>
+    <string name="title_activity_language_settings">LanguageSettings</string>
+
+    <string name="nav_home">首页</string>
+    <string name="nav_settings">设置</string>
+    <string name="nav_user">用户</string>
+    <string name="title_language">语言</string>
+
+    <string name="status_title">运行状态</string>
+    <string name="status_normal">所有功能正常运行</string>
+
+    <string name="category_permission">权限</string>
+    <string name="category_tamper">篡改</string>
+    <string name="category_control">控制</string>
+    <string name="category_audit">审计</string>
+
+    <string name="feature_clipboard">剪切板读取</string>
+    <string name="feature_sensor">传感器</string>
+
+    <string name="feature_device_info">设备信息</string>
+    <string name="feature_sim_info">SIM 信息</string>
+    <string name="feature_location">定位</string>
+    <string name="feature_sensor_info">传感器信息</string>
+    <string name="feature_contacts">联系人</string>
+    <string name="feature_app_list">应用列表</string>
+    <string name="feature_wifi_list">Wi-Fi列表</string>
+    <string name="feature_bluetooth_list">蓝牙列表</string>
+
+    <string name="feature_background_network">后台联网</string>
+    <string name="feature_force_proxy">强制代理</string>
+
+    <string name="feature_permission_stats">软件权限调取次数统计</string>
+
+
+    <string name="clipboard_permission_title">剪切板读取权限</string>
+    <string name="package_list_config_title">应用列表读取权限</string>
+
+    <string name="hint_package_or_app_name">包名或应用名</string>
+
+    <string name="ui_settings_title">UI设置</string>
+
+
+    <string-array name="languages">
+        <item>默认</item>
+        <item>简体中文</item>
+        <item>日语</item>
+    </string-array>
+
+    <string-array name="language_codes">
+        <item>null</item>
+        <item>zh</item>
+        <item>ja</item>
+    </string-array>
+</resources>

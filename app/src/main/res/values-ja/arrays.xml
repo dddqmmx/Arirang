@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="whitelist_blacklist_mode_options">
+        <item>ホワイトリスト</item>
+        <item>ブラックリスト</item>
+    </array>
+    <array name="visibility_list_options">
+        <item>表示</item>
+        <item>非表示</item>
+    </array>
+</resources>

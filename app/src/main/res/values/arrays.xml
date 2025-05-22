@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="xposedscope">
+        <item>x</item>
+    </string-array>
+    <array name="whitelist_blacklist_mode_options">
+        <item>白名单</item>
+        <item>黑名单</item>
+    </array>
+    <array name="visibility_list_options">
+        <item>可见</item>
+        <item>不可见</item>
+    </array>
+
+</resources>
