@@ -9,7 +9,7 @@
     <string name="title_language">言語</string>
 
     <string name="status_title">稼働状態</string>
-    <string name="status_normal">すべての機能が正常に動作しています</string>
+    <string name="status_normal">すべての機能が正常に動作</string>
 
     <string name="category_permission">権限</string>
     <string name="category_tamper">改ざん</string>
@@ -42,7 +42,7 @@
 
     <string-array name="languages">
         <item>デフォルト</item>
-        <item>中国語</item>
+        <item>簡体字中国語</item>
         <item>日本語</item>
     </string-array>
 </resources>

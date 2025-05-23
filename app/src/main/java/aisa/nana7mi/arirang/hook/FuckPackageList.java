@@ -2,8 +2,10 @@ package aisa.nana7mi.arirang.hook;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.os.Binder;
 import android.util.Log;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,16 +38,15 @@ public class FuckPackageList implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) {
         if (!"android".equals(lpparam.packageName)) return;
-
-        XposedBridge.log("Package hook loading for package: " + lpparam.packageName + ", process: " + lpparam.processName);
-
         try {
+            loadConfigIfUpdated();
+            Binder.getCallingUid();
             Class<?> computerEngine = XposedHelpers.findClassIfExists("com.android.server.pm.ComputerEngine", lpparam.classLoader);
             if (computerEngine == null) {
                 XposedBridge.log("Class not found ComputerEngine");
                 return;
             }
-            XposedBridge.log("Class found: " + computerEngine.getClassLoader());
+            XposedBridge.log("Class found");
             hookMethods(computerEngine);
         } catch (Throwable t) {
             XposedBridge.log("Hook failed: " + t.getMessage() + "\n" + Log.getStackTraceString(t));
@@ -69,34 +70,32 @@ public class FuckPackageList implements IXposedHookLoadPackage {
                             param.setResult(filteredList);
                         }
             });
-            XposedHelpers.findAndHookMethod(computerEngine,"getInstalledPackages", long.class, int.class,
-                    new XC_MethodHook() {
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) {
-                            loadConfigIfUpdated();
-                            if (!ENABLED) return;
-
-                            Object parceledListSlice = param.getResult(); // 假设是 ParceledListSlice<PackageInfo>
-                            if (parceledListSlice != null) {
-                                try {
-                                    // 反射调用 hidden 方法 getList()
-                                    List<?> list = (List<?>) XposedHelpers.callMethod(parceledListSlice, "getList");
-                                    List<PackageInfo> filteredList  = new ArrayList<>();
-                                    for (Object item : list) {
-                                        if (item instanceof PackageInfo) {
-                                            PackageInfo info = (PackageInfo) item;
-                                            if (shouldKeep(info.packageName)) {
-                                                filteredList.add(info);
-                                            }
-                                        }
+            XposedHelpers.findAndHookMethod(computerEngine,"getInstalledPackagesBody", long.class, int.class, int.class,
+            new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    loadConfigIfUpdated();
+                    if (!ENABLED) return;
+                    Object parceledListSlice = param.getResult();
+                    if (parceledListSlice != null) {
+                        try {
+                            List<?> list = (List<?>) XposedHelpers.callMethod(parceledListSlice, "getList");
+                            List<PackageInfo> filteredList  = new ArrayList<>();
+                            for (Object item : list) {
+                                if (item instanceof PackageInfo) {
+                                    PackageInfo info = (PackageInfo) item;
+                                    if (shouldKeep(info.packageName)) {
+                                        filteredList.add(info);
                                     }
-                                    param.setResult(XposedHelpers.newInstance(parceledListSlice.getClass(),filteredList));
-                                } catch (Throwable t) {
-                                    XposedBridge.log("Failed to get list from ParceledListSlice: " + t.getMessage());
                                 }
                             }
+                            param.setResult(XposedHelpers.newInstance(parceledListSlice.getClass(),filteredList));
+                        } catch (Throwable t) {
+                            XposedBridge.log("Failed to get list from ParceledListSlice: " + t.getMessage());
                         }
-                    });
+                    }
+                }
+            });
         } catch (Exception e) {
             XposedBridge.log("Error hooking methods: " + e.getMessage() + "\n" + Log.getStackTraceString(e));
         }

@@ -89,26 +89,6 @@
                     android:layout_weight="1"
                     app:featureName="@string/feature_sensor" />
             </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <aisa.nana7mi.arirang.view.FeatureItemView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    app:featureName="@string/feature_sim_info" />
-                <Space
-                    android:layout_width="8dp"
-                    android:layout_height="match_parent" />
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
         </LinearLayout>
 
         <!-- 篡改 -->
@@ -143,6 +123,7 @@
                     android:layout_height="match_parent" />
 
                 <aisa.nana7mi.arirang.view.FeatureItemView
+                    android:id="@+id/sim_info_setting_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"

@@ -20,20 +20,18 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 public class FuckSIM implements IXposedHookLoadPackage {
 
     @Override
-    public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
-
+    public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) {
+        if (!"android".equals(lpparam.packageName)) return;
         XposedBridge.log("SIM hook loading for package: " + lpparam.packageName + ", process: " + lpparam.processName);
 
         try {
-            Class<?> phoneInterfaceManager = XposedHelpers.findClassIfExists(
-                    "com.android.internal.telephony.MiuiSubscriptionControllerStub", lpparam.classLoader);
+            Class<?> phoneInterfaceManager = XposedHelpers.findClassIfExists("com.android.internal.telephony.subscription.SubscriptionManagerService", lpparam.classLoader);
             if (phoneInterfaceManager == null) {
-                XposedBridge.log("Class found");
+                XposedBridge.log("Class not found");
                 return;
             }
-            hookMethods(phoneInterfaceManager);
-
             XposedBridge.log("Class found: " + phoneInterfaceManager.getName());
+            hookMethods(phoneInterfaceManager);
         } catch (Throwable t) {
             XposedBridge.log("Hook failed: " + t.getMessage() + "\n" + Log.getStackTraceString(t));
         }
@@ -41,12 +39,12 @@ public class FuckSIM implements IXposedHookLoadPackage {
 
     private void hookMethods(Class<?> phoneInterfaceManager) {
         try {
-            XposedHelpers.findAndHookMethod(phoneInterfaceManager, "getActiveSubscriptionInfoList",
-                    String.class, String.class, boolean.class,
+            XposedHelpers.findAndHookMethod(phoneInterfaceManager, "getActiveSubscriptionInfoList", String.class, String.class,boolean.class,
                     new XC_MethodHook() {
                         @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            XposedBridge.log("wtffffffffffffffffffffffffffffffffffffffff");
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            XposedBridge.log("callingPackage: "+param.args[0]+", callingFeatureId: "+param.args[1]);
+                            param.setResult(null);
                         }
                     });
         } catch (Exception e) {
