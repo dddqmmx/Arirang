@@ -21,11 +21,12 @@
             android:layout_marginBottom="20dp" />
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/status_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:elevation="4dp"
-            app:cardBackgroundColor="@color/enabled_color"
+            app:cardBackgroundColor="@color/disabled_color"
             app:cardCornerRadius="8dp">
 
             <LinearLayout
@@ -46,7 +47,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="@string/status_normal"
+                    android:text="@string/status_deactivated"
                     android:textSize="16sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>

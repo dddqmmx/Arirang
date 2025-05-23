@@ -12,22 +12,32 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
+import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 
 class HomeFragment : Fragment() {
+
+    private lateinit var statusCard: CardView
+    private lateinit var statusText: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-//        Toast.makeText(activity,isXposedActivation().toString(),Toast.LENGTH_SHORT).show()
-
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        statusCard = view.findViewById<CardView>(R.id.status_card)
+        statusText = view.findViewById<TextView>(R.id.status_text)
+        if (isXposedActivation()){
+            statusCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.enabled_color));
+            statusText.setText(R.string.status_activated)
+        }
         view.findViewById<FeatureItemView>(R.id.clipboard_setting_bottom).setOnClickListener{
             val intent = Intent(requireContext(), ClipboardConfigActivity::class.java)
             startActivity(intent)
