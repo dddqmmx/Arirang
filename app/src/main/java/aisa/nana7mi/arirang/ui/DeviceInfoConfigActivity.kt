@@ -2,8 +2,8 @@ package aisa.nana7mi.arirang.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
-import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import android.widget.ScrollView
@@ -11,108 +11,79 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.util.Arrays
 
 class DeviceInfoConfigActivity : AppCompatActivity() {
 
-    private val PERMISSION_REQUEST_CODE = 101
-    private lateinit var infoTextView: TextView
+    private lateinit var textView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        infoTextView = TextView(this).apply {
-            textSize = 16f
+
+        // 创建 ScrollView 和 TextView
+        val scrollView = ScrollView(this)
+        textView = TextView(this).apply {
             setPadding(16, 16, 16, 16)
+            textSize = 16f
         }
-        val scrollView = ScrollView(this).apply {
-            addView(infoTextView)
-        }
+        scrollView.addView(textView)
         setContentView(scrollView)
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.READ_PHONE_STATE),
-                PERMISSION_REQUEST_CODE)
+        // 检查并请求权限
+        if (checkPermissions()) {
+            displayDeviceInfo()
         } else {
-            showAllSimInfo()
+            requestPermissions()
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<out String>,
-                                            grantResults: IntArray) {
+    private fun checkPermissions(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_PHONE_STATE
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.READ_PHONE_STATE),
+            REQUEST_PHONE_STATE_PERMISSION
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_CODE &&
-            grantResults.isNotEmpty() &&
-            grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            showAllSimInfo()
+        if (requestCode == REQUEST_PHONE_STATE_PERMISSION && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            displayDeviceInfo()
         } else {
-            infoTextView.text = "Permission denied"
+            textView.text = "权限被拒绝，无法获取部分设备信息。"
         }
     }
 
-    private fun showAllSimInfo() {
-        val subscriptionManager = getSystemService(SubscriptionManager::class.java)
-        val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+    private fun displayDeviceInfo() {
+        val info = StringBuilder()
 
-        val subscriptionList = subscriptionManager.activeSubscriptionInfoList
-        if (subscriptionList == null || subscriptionList.isEmpty()) {
-            infoTextView.text = "No active SIM cards found."
-            return
-        }
+        // 基本设备信息
+        info.append("品牌 (Brand): ${Build.BRAND}\n")
+        info.append("型号 (Model): ${Build.MODEL}\n")
+        info.append("设备 (Device): ${Build.DEVICE}\n")
+        info.append("产品 (Product): ${Build.PRODUCT}\n")
+        info.append("主板代号 (Board): ${Build.BOARD}\n")
+        info.append("CPU 代号 (Supported ABIs): ${Arrays.toString(Build.SUPPORTED_ABIS)}\n")
+        info.append("Android 版本 (Release): ${Build.VERSION.RELEASE}\n")
+        info.append("API 级别 (SDK): ${Build.VERSION.SDK_INT}\n")
+        info.append("Fingerprint: ${Build.FINGERPRINT}\n")
 
-        val sb = StringBuilder()
-        subscriptionList.forEachIndexed { index, subscriptionInfo ->
-            val subId = subscriptionInfo.subscriptionId
-            val tmForSub = telephonyManager.createForSubscriptionId(subId)
-
-            val simOperatorName = tmForSub.simOperatorName ?: "N/A"
-            val networkOperatorName = tmForSub.networkOperatorName ?: "N/A"
-            val phoneType = when (tmForSub.phoneType) {
-                TelephonyManager.PHONE_TYPE_GSM -> "GSM"
-                TelephonyManager.PHONE_TYPE_CDMA -> "CDMA"
-                TelephonyManager.PHONE_TYPE_SIP -> "SIP"
-                else -> "Unknown"
-            }
-            val simState = when (tmForSub.simState) {
-                TelephonyManager.SIM_STATE_ABSENT -> "Absent"
-                TelephonyManager.SIM_STATE_READY -> "Ready"
-                TelephonyManager.SIM_STATE_PIN_REQUIRED -> "PIN Required"
-                TelephonyManager.SIM_STATE_PUK_REQUIRED -> "PUK Required"
-                TelephonyManager.SIM_STATE_NETWORK_LOCKED -> "Network Locked"
-                else -> "Unknown"
-            }
-
-            // 构建输出内容
-            sb.append("SIM Card #${index + 1}:\n")
-            sb.append("  Display Name: ${subscriptionInfo.displayName}\n")
-            sb.append("  Carrier Name: ${subscriptionInfo.carrierName}\n")
-            sb.append("  SIM Operator Name: $simOperatorName\n")
-            sb.append("  Network Operator Name: $networkOperatorName\n")
-            sb.append("  Phone Type: $phoneType\n")
-            sb.append("  SIM State: $simState\n")
-            sb.append("  Phone Number: ${subscriptionInfo.number ?: "N/A"}\n")
-            sb.append("  Country ISO: ${subscriptionInfo.countryIso ?: "N/A"}\n")
-            sb.append("  ICC ID: ${subscriptionInfo.iccId ?: "N/A"}\n")
-            sb.append("  MCC: ${subscriptionInfo.mccString ?: "N/A"}\n")
-            sb.append("  MNC: ${subscriptionInfo.mncString ?: "N/A"}\n")
-            sb.append("  Is eSIM: ${subscriptionInfo.isEmbedded}\n")
-            sb.append("  Card ID: ${subscriptionInfo.cardId}\n")
-
-            // 以下信息可能受权限或系统版本限制
-            try {
-                sb.append("  SIM Serial Number: ${tmForSub.simSerialNumber ?: "N/A"}\n")
-                sb.append("  Subscriber ID (IMSI): ${tmForSub.subscriberId ?: "N/A"}\n")
-                sb.append("  Line 1 Number: ${tmForSub.line1Number ?: "N/A"}\n")
-                sb.append("  Group ID Level 1: ${tmForSub.groupIdLevel1 ?: "N/A"}\n")
-            } catch (e: SecurityException) {
-                sb.append("  (Some sensitive info blocked by system permissions)\n")
-            }
-
-            sb.append("\n")
-        }
-
-        infoTextView.text = sb.toString()
+        // 显示信息
+        textView.text = info.toString()
     }
 
+    companion object {
+        private const val REQUEST_PHONE_STATE_PERMISSION = 100
+    }
 }

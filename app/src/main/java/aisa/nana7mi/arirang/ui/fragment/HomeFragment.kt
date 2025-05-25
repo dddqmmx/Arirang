@@ -3,6 +3,7 @@ package aisa.nana7mi.arirang.ui.fragment
 import aisa.nana7mi.arirang.R
 import aisa.nana7mi.arirang.ui.ClipboardConfigActivity
 import aisa.nana7mi.arirang.ui.DeviceInfoConfigActivity
+import aisa.nana7mi.arirang.ui.LocationConfigActivity
 import aisa.nana7mi.arirang.ui.PackageListConfigActivity
 import aisa.nana7mi.arirang.ui.SimConfigActivity
 import aisa.nana7mi.arirang.view.FeatureItemView
@@ -44,6 +45,10 @@ class HomeFragment : Fragment() {
         }
         view.findViewById<FeatureItemView>(R.id.sim_info_setting_bottom).setOnClickListener {
             val intent = Intent(requireContext(), SimConfigActivity::class.java)
+            startActivity(intent)
+        }
+        view.findViewById<FeatureItemView>(R.id.location_setting_bottom).setOnClickListener {
+            val intent = Intent(requireContext(), LocationConfigActivity::class.java)
             startActivity(intent)
         }
         view.findViewById<FeatureItemView>(R.id.device_info_setting_bottom).setOnClickListener{

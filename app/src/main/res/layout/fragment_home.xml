@@ -40,6 +40,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/status_title"
                     android:textSize="18sp"
+                    android:textColor="@color/black"
                     android:textStyle="bold"/>
 
                 <TextView
@@ -48,6 +49,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/status_deactivated"
+                    android:textColor="@color/black"
                     android:textSize="16sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -84,11 +86,10 @@
                     android:layout_width="8dp"
                     android:layout_height="match_parent" />
 
-                <aisa.nana7mi.arirang.view.FeatureItemView
+                <Space
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    app:featureName="@string/feature_sensor" />
+                    android:layout_weight="1" />
             </LinearLayout>
         </LinearLayout>
 
@@ -113,11 +114,11 @@
                 android:orientation="horizontal">
 
                 <aisa.nana7mi.arirang.view.FeatureItemView
-                    android:id="@+id/device_info_setting_bottom"
+                    android:id="@+id/package_list_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:featureName="@string/feature_device_info" />
+                    app:featureName="@string/feature_app_list" />
 
                 <Space
                     android:layout_width="8dp"
@@ -135,8 +136,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
                 <aisa.nana7mi.arirang.view.FeatureItemView
+                    android:id="@+id/location_setting_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -145,57 +146,14 @@
                 <Space
                     android:layout_width="8dp"
                     android:layout_height="match_parent" />
-
                 <aisa.nana7mi.arirang.view.FeatureItemView
+                    android:id="@+id/device_info_setting_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:featureName="@string/feature_sensor_info" />
-            </LinearLayout>
+                    app:featureName="@string/feature_device_info" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
 
-                <aisa.nana7mi.arirang.view.FeatureItemView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    app:featureName="@string/feature_contacts" />
-
-                <Space
-                    android:layout_width="8dp"
-                    android:layout_height="match_parent" />
-
-                <aisa.nana7mi.arirang.view.FeatureItemView
-                    android:id="@+id/package_list_bottom"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    app:featureName="@string/feature_app_list" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <aisa.nana7mi.arirang.view.FeatureItemView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    app:featureName="@string/feature_wifi_list" />
-
-                <Space
-                    android:layout_width="8dp"
-                    android:layout_height="match_parent" />
-
-                <aisa.nana7mi.arirang.view.FeatureItemView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    app:featureName="@string/feature_bluetooth_list" />
             </LinearLayout>
         </LinearLayout>
 
