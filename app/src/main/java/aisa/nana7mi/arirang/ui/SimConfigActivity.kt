@@ -12,6 +12,7 @@ import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlin.collections.forEachIndexed
@@ -48,6 +49,7 @@ class SimConfigActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -64,11 +66,12 @@ class SimConfigActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
     private fun showAllSimInfo() {
         val subscriptionManager = getSystemService(SubscriptionManager::class.java)
         val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
 
-        val subscriptionList = subscriptionManager.activeSubscriptionInfoList
+        val subscriptionList = subscriptionManager.getActiveSubscriptionInfoList();
         if (subscriptionList == null || subscriptionList.isEmpty()) {
             infoTextView.text = "No active SIM cards found."
             return

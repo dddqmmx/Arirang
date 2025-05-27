@@ -13,7 +13,7 @@
     <string name="status_deactivated">モジュールが無効化されています</string>
 
     <string name="category_permission">権限</string>
-    <string name="category_tamper">改ざん</string>
+    <string name="category_tamper">匿名化</string>
     <string name="category_control">制御</string>
     <string name="category_audit">監査</string>
 
