@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "aisa.nana7mi.arirang"
+    namespace = "asia.nana7mi.arirang"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "aisa.nana7mi.arirang"
+        applicationId = "asia.nana7mi.arirang"
         minSdk = 34
         targetSdk = 35
         versionCode = 1

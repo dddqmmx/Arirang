@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <aisa.nana7mi.arirang.view.FeatureItemView
+                <asia.nana7mi.arirang.view.FeatureItemView
                     android:id="@+id/clipboard_setting_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -113,7 +113,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <aisa.nana7mi.arirang.view.FeatureItemView
+                <asia.nana7mi.arirang.view.FeatureItemView
                     android:id="@+id/package_list_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -124,7 +124,7 @@
                     android:layout_width="8dp"
                     android:layout_height="match_parent" />
 
-                <aisa.nana7mi.arirang.view.FeatureItemView
+                <asia.nana7mi.arirang.view.FeatureItemView
                     android:id="@+id/sim_info_setting_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -136,7 +136,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <aisa.nana7mi.arirang.view.FeatureItemView
+                <asia.nana7mi.arirang.view.FeatureItemView
                     android:id="@+id/location_setting_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -146,7 +146,7 @@
                 <Space
                     android:layout_width="8dp"
                     android:layout_height="match_parent" />
-                <aisa.nana7mi.arirang.view.FeatureItemView
+                <asia.nana7mi.arirang.view.FeatureItemView
                     android:id="@+id/device_info_setting_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -177,7 +177,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <aisa.nana7mi.arirang.view.FeatureItemView
+                <asia.nana7mi.arirang.view.FeatureItemView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -187,7 +187,7 @@
                     android:layout_width="8dp"
                     android:layout_height="match_parent" />
 
-                <aisa.nana7mi.arirang.view.FeatureItemView
+                <asia.nana7mi.arirang.view.FeatureItemView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -215,7 +215,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <aisa.nana7mi.arirang.view.FeatureItemView
+                <asia.nana7mi.arirang.view.FeatureItemView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:featureName="@string/feature_permission_stats" />

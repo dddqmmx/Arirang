@@ -1,0 +1,32 @@
+package asia.nana7mi.arirang.model
+
+data class SimInfo(
+    val id: Int?,
+    val iccId: String?,
+    val simSlotIndex: Int?,
+    val displayName: String?,
+    val carrierName: String?,
+    val nameSource: Int?,
+    val iconTint: Int?,
+    val number: String?,
+    val roaming: Int?,
+    val icon: Any?,
+    val mcc: String?,
+    val mnc: String?,
+    val countryIso: String?,
+    val isEmbedded: Boolean?,
+    val nativeAccessRules: Any?,
+    val cardString: String?,
+    val cardId: Int?,
+    val isOpportunistic: Boolean?,
+    val groupUuid: String?,
+    val isGroupDisabled: Boolean?,
+    val carrierId: Int?,
+    val profileClass: Int?,
+    val subType: Int?,
+    val groupOwner: String?,
+    val carrierConfigAccessRules: Any?,
+    val areUiccApplicationsEnabled: Boolean?,
+    val portIndex: Int?,
+    val usageSetting: Int?
+)
