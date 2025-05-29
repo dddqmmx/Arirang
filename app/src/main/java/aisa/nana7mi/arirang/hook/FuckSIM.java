@@ -1,6 +1,7 @@
 package aisa.nana7mi.arirang.hook;
 
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.IBinder;
@@ -24,11 +25,26 @@ import dalvik.system.DexClassLoader;
 import dalvik.system.DexFile;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public class FuckSIM implements IXposedHookLoadPackage {
+
+    private static final String PREFS_NAME = "sim_config_prefs";
+    private static final String ENABLED_KEY = "enabled";
+    private static final String MODE_KEY = "mode";
+    private static final String WHITELIST_KEY = "whitelist";
+    private static final String BLACKLIST_KEY = "blacklist";
+    private static final String LAST_MODIFIED_KEY = "last_modified";
+
+    public enum Mode { WHITELIST, BLACKLIST }
+
+    private static Set<String> PACKAGE_SET = Collections.emptySet();
+    private static boolean ENABLED = false;
+    private static Mode MODE = Mode.WHITELIST;
+    private static long lastLoadedTimestamp = -1;
 
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) {
@@ -43,7 +59,6 @@ public class FuckSIM implements IXposedHookLoadPackage {
             }
             XposedBridge.log("Class found");
             hookMethods(subscriptionManagerService);
-//            methodsTest(subscriptionManagerService);
         } catch (Throwable t) {
             XposedBridge.log("Hook failed: " + t.getMessage() + "\n" + Log.getStackTraceString(t));
         }
@@ -55,7 +70,24 @@ public class FuckSIM implements IXposedHookLoadPackage {
                     new XC_MethodHook() {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) {
-                            param.setResult(Collections.emptyList());
+                            loadConfigIfUpdated();
+
+                            if (!ENABLED) return;
+
+                            String callingPackage = (String) param.args[0];
+
+                            if (shouldFilter(callingPackage)) {
+                                param.setResult(Collections.emptyList());
+                            }
+
+                            Object subscriptionInfoList = param.getResult();
+                            List<?> list = (List<?>) subscriptionInfoList;
+                            for (Object item : list) {
+                                XposedBridge.log("Item: " + item);
+                                SubscriptionInfo subInfo = (SubscriptionInfo) item;
+                                XposedBridge.log("IccId: " + subInfo.getIccId());
+                            }
+//                            param.setResult(Collections.emptyList());
                         }
                     });
         }catch (Exception e) {
@@ -63,41 +95,41 @@ public class FuckSIM implements IXposedHookLoadPackage {
         }
     }
 
-    private void methodsTest(Class<?> clazz) {
-        Method[] methods = clazz.getDeclaredMethods();
-        Set<String> hookedMethods = new HashSet<>();
+    private boolean shouldFilter(String callingPackage) {
+        if (callingPackage == null) return true;
 
-        for (Method method : methods) {
-            try {
-                if (method.isBridge() || method.isSynthetic()) continue;
-
-                String methodName = method.getName();
-
-                // 避免对同名方法重复 hook（因为 hookAllMethods 是对所有重载生效）
-                if (hookedMethods.contains(methodName)) continue;
-                hookedMethods.add(methodName);
-
-                XposedBridge.hookAllMethods(clazz, methodName, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        XposedBridge.log("[Before] " + methodName + " called with args: " + Arrays.toString(param.args));
-                    }
-
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        XposedBridge.log("[After] " + methodName + " returned: " + param.getResult());
-                    }
-                });
-
-//                XposedBridge.log("Hooked all methods named: " + methodName);
-            } catch (Throwable t) {
-                XposedBridge.log("Failed to hook method: " + method.getName() + " - " + t);
-            }
+        switch (MODE) {
+            case WHITELIST:
+                return !PACKAGE_SET.contains(callingPackage);
+            case BLACKLIST:
+                return PACKAGE_SET.contains(callingPackage);
+            default:
+                return true;
         }
     }
 
 
+    private static XSharedPreferences getPref() {
+        XSharedPreferences pref = new XSharedPreferences(BuildConfig.APPLICATION_ID, PREFS_NAME);
+        return pref.getFile().canRead() ? pref : null;
+    }
 
+    private static void loadConfigIfUpdated() {
+        XSharedPreferences pref = getPref();
+        if (pref == null) return;
 
+        pref.reload();
+        long newTimestamp = pref.getLong(LAST_MODIFIED_KEY, -1);
+        if (newTimestamp == lastLoadedTimestamp) return;
+
+        lastLoadedTimestamp = newTimestamp;
+
+        ENABLED = pref.getBoolean(ENABLED_KEY, false);
+        int modeInt = pref.getInt(MODE_KEY, 0);  // 0 = WHITELIST, 1 = BLACKLIST
+        MODE = (modeInt == 1) ? Mode.BLACKLIST : Mode.WHITELIST;
+
+        Set<String> rawSet = pref.getStringSet(MODE == Mode.WHITELIST ? WHITELIST_KEY : BLACKLIST_KEY, null);
+        PACKAGE_SET = rawSet != null ? new HashSet<>(rawSet) : Collections.emptySet();
+    }
 
 }

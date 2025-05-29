@@ -37,9 +37,11 @@
     <string name="clipboard_permission_title">クリップボード読み取り権限</string>
     <string name="package_list_config_title">アプリリスト読み取り権限</string>
 
+    <string name="sim_config_title">SIMデータ設定</string>
     <string name="hint_package_or_app_name">アプリ名で検索</string>
 
     <string name="ui_settings_title">UI設定</string>
+    <string name="slot_title_text">%1$d. SIMストック</string>"
 
     <string-array name="languages">
         <item>デフォルト</item>

@@ -37,7 +37,7 @@
                 android:id="@+id/featureStatusIcon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_status_enabled" />
+                android:src="@drawable/ic_status_disabled" />
         </LinearLayout>
 
 

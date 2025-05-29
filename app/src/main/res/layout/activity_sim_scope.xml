@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".ui.ClipboardConfigActivity">
+    tools:context=".ui.PackageListConfigActivity">
 
     <LinearLayout
         android:id="@+id/rootLayout"
@@ -29,15 +29,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/clipboard_permission_title"
+                android:text="@string/sim_scope_title"
                 android:textSize="24sp"
                 android:textStyle="bold"/>
-
-            <ImageView
-                android:id="@+id/featureStatusIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_status_disabled" />
         </LinearLayout>
 
 
