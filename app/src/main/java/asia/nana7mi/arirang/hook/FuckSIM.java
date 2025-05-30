@@ -36,7 +36,7 @@ public class FuckSIM implements IXposedHookLoadPackage {
     private static Set<String> PACKAGE_SET = Collections.emptySet();
     private static boolean ENABLED = false;
     private static Mode MODE = Mode.WHITELIST;
-    private static Set<SimInfo> SIM_INFO_SET = Collections.emptySet();
+    private static List<SimInfo> SIM_INFO_SET = Collections.emptyList();
     private static long lastLoadedTimestamp = -1;
 
     private static final Gson gson = new Gson();
@@ -73,15 +73,18 @@ public class FuckSIM implements IXposedHookLoadPackage {
 
                             if (shouldFilter(callingPackage)) {
                                 param.setResult(Collections.emptyList());
+                                return;
                             }
 
-                            Object subscriptionInfoList = param.getResult();
-                            List<?> list = (List<?>) subscriptionInfoList;
-                            for (Object item : list) {
-                                XposedBridge.log("Item: " + item);
-                                SubscriptionInfo subInfo = (SubscriptionInfo) item;
-                                XposedBridge.log("IccId: " + subInfo.getIccId());
-                            }
+//                            Object subscriptionInfoList = param.getResult();
+//                            List<?> list = (List<?>) subscriptionInfoList;
+//                            List<SubscriptionInfo> newSubscriptionInfoList = Collections.emptyList();
+//                            for (int i = 0; i < list.size(); i++) {
+//                                Object item = list.get(i);
+//                                SimInfo simInfo = SIM_INFO_SET.get(i);
+//                                SubscriptionInfo subInfo = (SubscriptionInfo) item;
+//                                newSubscriptionInfoList.add(subInfo);
+//                            }
 //                            param.setResult(Collections.emptyList());
                         }
                     });
@@ -103,13 +106,12 @@ public class FuckSIM implements IXposedHookLoadPackage {
         }
     }
 
-    public static Set<SimInfo> parseSimInfo(String json) {
+    public static List<SimInfo> parseSimInfo(String json) {
         if (json != null) {
             Type listType = new TypeToken<List<SimInfo>>() {}.getType();
-            List<SimInfo> simInfoList = gson.fromJson(json, listType);
-            return new HashSet<>(simInfoList); // 转成 Set
+            return gson.fromJson(json, listType); // 转成 Set
         } else {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
     }
 

@@ -1,5 +1,7 @@
 package asia.nana7mi.arirang.model
 
+import android.graphics.Bitmap
+
 data class SimInfo(
     val id: Int?,
     val iccId: String?,
@@ -10,12 +12,12 @@ data class SimInfo(
     val iconTint: Int?,
     val number: String?,
     val roaming: Int?,
-    val icon: Any?,
+    val icon: Bitmap?,
     val mcc: String?,
     val mnc: String?,
     val countryIso: String?,
     val isEmbedded: Boolean?,
-    val nativeAccessRules: Any?,
+    val nativeAccessRules: Object?,
     val cardString: String?,
     val cardId: Int?,
     val isOpportunistic: Boolean?,
@@ -25,7 +27,7 @@ data class SimInfo(
     val profileClass: Int?,
     val subType: Int?,
     val groupOwner: String?,
-    val carrierConfigAccessRules: Any?,
+    val carrierConfigAccessRules: Object?,
     val areUiccApplicationsEnabled: Boolean?,
     val portIndex: Int?,
     val usageSetting: Int?
