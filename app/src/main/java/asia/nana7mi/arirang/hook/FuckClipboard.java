@@ -81,7 +81,7 @@ public class FuckClipboard implements IXposedHookLoadPackage {
 
     private void hookClipboardAccessMethod(Class<?> clipboardService) {
         try {
-            XposedHelpers.findAndHookMethod(clipboardService, "clipboardAccessAllowed", int.class, String.class, String.class, int.class, int.class, int.class, boolean.class, boolean.class, boolean.class,
+            XposedHelpers.findAndHookMethod(clipboardService, "clipboardAccessAllowed", int.class, String.class, String.class, int.class, int.class, int.class, boolean.class,
                     new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) {

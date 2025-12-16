@@ -13,7 +13,7 @@
     <string name="status_deactivated">モジュールが無効化されています</string>
 
     <string name="category_permission">権限</string>
-    <string name="category_tamper">匿名化</string>
+    <string name="category_anonymization">匿名化</string>
     <string name="category_control">制御</string>
     <string name="category_audit">監査</string>
 
@@ -36,6 +36,7 @@
 
     <string name="clipboard_permission_title">クリップボード読み取り権限</string>
     <string name="package_list_config_title">アプリリスト読み取り権限</string>
+    <string name="sim_scope_title">SIM改ざんの影響範囲</string>
 
     <string name="sim_config_title">SIMデータ設定</string>
     <string name="hint_package_or_app_name">アプリ名で検索</string>

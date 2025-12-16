@@ -13,7 +13,7 @@
     <string name="status_deactivated">模块未激活</string>
 
     <string name="category_permission">权限</string>
-    <string name="category_tamper">篡改</string>
+    <string name="category_anonymization">匿名化</string>
     <string name="category_control">控制</string>
     <string name="category_audit">审计</string>
 

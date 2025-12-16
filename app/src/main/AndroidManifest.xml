@@ -18,11 +18,11 @@
         android:name=".ArirangApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:extractNativeLibs="false"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:multiArch="true"
+        android:extractNativeLibs="false"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Arirang">
@@ -50,7 +50,6 @@
         <activity
             android:name=".ui.ClipboardConfigActivity"
             android:exported="false" />
-
         <meta-data
             android:name="xposedmodule"
             android:value="true" />
@@ -63,7 +62,6 @@
         <meta-data
             android:name="xposedscope"
             android:resource="@array/xposedscope" />
-
         <activity
             android:name=".ui.MainActivity"
             android:exported="true">
