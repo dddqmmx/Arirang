@@ -1,107 +1,51 @@
-package asia.nana7mi.arirang.hook;
+package asia.nana7mi.arirang.hook
 
-import android.app.AppOpsManager;
+import android.app.AppOpsManager
+import de.robv.android.xposed.IXposedHookLoadPackage
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
+import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+class FuckClipboard : IXposedHookLoadPackage {
+    private val config = HookConfig("clipboard_whitelist_prefs")
 
-import asia.nana7mi.arirang.BuildConfig;
-import de.robv.android.xposed.IXposedHookLoadPackage;
-import de.robv.android.xposed.XSharedPreferences;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
-
-public class FuckClipboard implements IXposedHookLoadPackage {
-    private static int opWriteClipboard;
-    private static final String PREFS_NAME = "clipboard_whitelist_prefs";
-    private static final String ENABLED_KEY = "enabled";
-    private static final String MODE_KEY = "mode";
-    private static final String WHITELIST_KEY = "whitelist";
-    private static final String BLACKLIST_KEY = "blacklist";
-    private static final String LAST_MODIFIED_KEY = "last_modified";
-
-    public enum Mode { WHITELIST, BLACKLIST }
-
-    private static Set<String> PACKAGE_SET = Collections.emptySet();
-    private static boolean ENABLED = false;
-    private static Mode MODE = Mode.WHITELIST;
-    private static long lastLoadedTimestamp = -1;
-
-    static {
-        try {
-            Field opWriteClipboardField = XposedHelpers.findField(AppOpsManager.class, "OP_WRITE_CLIPBOARD");
-            opWriteClipboard = (int) opWriteClipboardField.get(null);
-        } catch (Exception e) {
-            XposedBridge.log("Error initializing AppOpsManager field: " + e);
+    companion object {
+        private var opWriteClipboard: Int = -1
+        init {
+            runCatching {
+                opWriteClipboard = XposedHelpers.findField(AppOpsManager::class.java, "OP_WRITE_CLIPBOARD").get(null) as Int
+            }.onFailure { XposedBridge.log("FuckClipboard: Error getting OP_WRITE_CLIPBOARD: $it") }
         }
     }
 
-    @Override
-    public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
-        if (!"android".equals(lpparam.packageName)) return;
+    override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
+        if (lpparam.packageName != "android") return
 
-        try {
-            loadConfigIfUpdated(); // Initial load
-            XposedBridge.log("Clipboard hook loaded with mode: " + MODE + ", enabled: " + ENABLED + ", package set: " + PACKAGE_SET);
+        runCatching {
+            val clipboardService = XposedHelpers.findClass("com.android.server.clipboard.ClipboardService", lpparam.classLoader)
 
-            Class<?> clipboardService = XposedHelpers.findClass("com.android.server.clipboard.ClipboardService", lpparam.classLoader);
-            hookClipboardAccessMethod(clipboardService);
-            XposedBridge.log("FuckClipboard hooked successfully");
-        } catch (Throwable t) {
-            XposedBridge.log("Hook failed: " + t + " 包名: " + lpparam.packageName + " 进程名: " + lpparam.processName);
-        }
-    }
+            XposedHelpers.findAndHookMethod(
+                clipboardService, "clipboardAccessAllowed",
+                Int::class.java, String::class.java, String::class.java, Int::class.java,
+                Int::class.java, Int::class.java, Boolean::class.java, Boolean::class.java,
+                object : XC_MethodHook() {
+                    override fun beforeHookedMethod(param: MethodHookParam) {
+                        config.loadIfUpdated("whitelist", "blacklist")
 
-    private static XSharedPreferences getPref() {
-        XSharedPreferences pref = new XSharedPreferences(BuildConfig.APPLICATION_ID, PREFS_NAME);
-        return pref.getFile().canRead() ? pref : null;
-    }
+                        val op = param.args[0] as Int
+                        if (op == opWriteClipboard) return // 只处理读取/查询，不拦截写入（可根据需求调整）
 
-    private static void loadConfigIfUpdated() {
-        XSharedPreferences pref = getPref();
-        if (pref == null) return;
-
-        pref.reload();
-        long newTimestamp = pref.getLong(LAST_MODIFIED_KEY, -1);
-        if (newTimestamp == lastLoadedTimestamp) return;
-
-        lastLoadedTimestamp = newTimestamp;
-
-        ENABLED = pref.getBoolean(ENABLED_KEY, false);
-        int modeInt = pref.getInt(MODE_KEY, 0);  // 0 = WHITELIST, 1 = BLACKLIST
-        MODE = (modeInt == 1) ? Mode.BLACKLIST : Mode.WHITELIST;
-
-        Set<String> rawSet = pref.getStringSet(MODE == Mode.WHITELIST ? WHITELIST_KEY : BLACKLIST_KEY, null);
-        PACKAGE_SET = rawSet != null ? new HashSet<>(rawSet) : Collections.emptySet();
-    }
-
-    private void hookClipboardAccessMethod(Class<?> clipboardService) {
-        try {
-            XposedHelpers.findAndHookMethod(clipboardService, "clipboardAccessAllowed", int.class, String.class, String.class, int.class, int.class, int.class, boolean.class,
-                    new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) {
-                            loadConfigIfUpdated();
-
-                            int op = (int) param.args[0];
-                            if (op == opWriteClipboard) return;
-
-                            if (!ENABLED) return;
-
-                            String callingPackage = (String) param.args[1];
-                            boolean match = PACKAGE_SET.contains(callingPackage);
-
-                            if ((MODE == Mode.WHITELIST && !match) || (MODE == Mode.BLACKLIST && match)) {
-                                param.setResult(false); // Block access
-                            }
+                        val callingPackage = param.args[1] as String
+                        if (config.shouldBlock(callingPackage)) {
+                            param.result = false
                         }
-                    });
-        } catch (Exception e) {
-            XposedBridge.log("Error hooking clipboardAccessAllowed: " + e);
+                    }
+                }
+            )
+            XposedBridge.log("FuckClipboard: Hooked successfully")
+        }.onFailure {
+            XposedBridge.log("FuckClipboard: Hook failed: $it")
         }
     }
 }

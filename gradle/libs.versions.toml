@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.3"
+agp = "8.13.2"
 api = "82"
 coreSplashscreen = "1.0.1"
 googleGson = "2.10.1"

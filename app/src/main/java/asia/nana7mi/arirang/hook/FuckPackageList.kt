@@ -1,135 +1,69 @@
-package asia.nana7mi.arirang.hook;
+package asia.nana7mi.arirang.hook
 
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.os.Binder;
-import android.util.Log;
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
+import de.robv.android.xposed.IXposedHookLoadPackage
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
+import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+class FuckPackageList : IXposedHookLoadPackage {
+    private val config = HookConfig("clipboard_visibility_prefs")
 
-import asia.nana7mi.arirang.BuildConfig;
-import de.robv.android.xposed.IXposedHookLoadPackage;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XSharedPreferences;
-import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
+    override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
+        if (lpparam.packageName != "android") return
 
-public class FuckPackageList implements IXposedHookLoadPackage {
-    private static final String PREFS_NAME = "clipboard_visibility_prefs";
-    private static final String ENABLED_KEY = "enabled";
-    private static final String MODE_KEY = "mode";
-    private static final String VISIBLE_LIST_KEY = "visible_list";
-    private static final String INVISIBLE_LIST_KEY = "invisible_list";
-    private static final String LAST_MODIFIED_KEY = "last_modified";
+        runCatching {
+            val computerEngine = XposedHelpers.findClassIfExists("com.android.server.pm.ComputerEngine", lpparam.classLoader)
+                ?: throw ClassNotFoundException("ComputerEngine not found")
 
-    public enum Mode { VISIBLE, INVISIBLE }
+            // 1. Hook getInstalledApplications
+            XposedHelpers.findAndHookMethod(
+                computerEngine, "getInstalledApplications",
+                Long::class.java, Int::class.java, Int::class.java, Boolean::class.java,
+                object : XC_MethodHook() {
+                    override fun afterHookedMethod(param: MethodHookParam) {
+                        filterList<ApplicationInfo>(param) { it.packageName }
+                    }
+                }
+            )
 
-    private static Set<String> PACKAGE_SET = Collections.emptySet();
-    private static boolean ENABLED = false;
-    private static Mode MODE = Mode.VISIBLE;
-    private static long lastLoadedTimestamp = -1;
-
-    @Override
-    public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) {
-        if (!"android".equals(lpparam.packageName)) return;
-        try {
-            loadConfigIfUpdated();
-            Binder.getCallingUid();
-            Class<?> computerEngine = XposedHelpers.findClassIfExists("com.android.server.pm.ComputerEngine", lpparam.classLoader);
-            if (computerEngine == null) {
-                XposedBridge.log("Class not found ComputerEngine");
-                return;
-            }
-            XposedBridge.log("Class found");
-            hookMethods(computerEngine);
-        } catch (Throwable t) {
-            XposedBridge.log("Hook failed: " + t.getMessage() + "\n" + Log.getStackTraceString(t));
-        }
-    }
-    private void hookMethods(Class<?> computerEngine) {
-        try {
-            XposedHelpers.findAndHookMethod(computerEngine,"getInstalledApplications", long.class, int.class, int.class, boolean.class,
-                    new XC_MethodHook() {
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) {
-                            loadConfigIfUpdated();
-                            if (!ENABLED) return;
-                            List<ApplicationInfo> originalList = (List<ApplicationInfo>) param.getResult();
-                            List<ApplicationInfo> filteredList = new ArrayList<>();
-                            for (ApplicationInfo appInfo : originalList) {
-                                if (shouldKeep(appInfo.packageName)) {
-                                    filteredList.add(appInfo);
-                                }
+            // 2. Hook getInstalledPackagesBody
+            XposedHelpers.findAndHookMethod(
+                computerEngine, "getInstalledPackagesBody",
+                Long::class.java, Int::class.java, Int::class.java,
+                object : XC_MethodHook() {
+                    override fun afterHookedMethod(param: MethodHookParam) {
+                        val parceledListSlice = param.result ?: return
+                        runCatching {
+                            val list = XposedHelpers.callMethod(parceledListSlice, "getList") as List<*>
+                            val filtered = list.filterIsInstance<PackageInfo>().filter {
+                                config.loadIfUpdated("visible_list", "invisible_list")
+                                config.shouldKeep(it.packageName)
                             }
-                            param.setResult(filteredList);
-                        }
-            });
-            XposedHelpers.findAndHookMethod(computerEngine,"getInstalledPackagesBody", long.class, int.class, int.class,
-            new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) {
-                    loadConfigIfUpdated();
-                    if (!ENABLED) return;
-                    Object parceledListSlice = param.getResult();
-                    if (parceledListSlice != null) {
-                        try {
-                            List<?> list = (List<?>) XposedHelpers.callMethod(parceledListSlice, "getList");
-                            List<PackageInfo> filteredList  = new ArrayList<>();
-                            for (Object item : list) {
-                                if (item instanceof PackageInfo) {
-                                    PackageInfo info = (PackageInfo) item;
-                                    if (shouldKeep(info.packageName)) {
-                                        filteredList.add(info);
-                                    }
-                                }
-                            }
-                            param.setResult(XposedHelpers.newInstance(parceledListSlice.getClass(),filteredList));
-                        } catch (Throwable t) {
-                            XposedBridge.log("Failed to get list from ParceledListSlice: " + t.getMessage());
+                            param.result = XposedHelpers.newInstance(parceledListSlice.javaClass, filtered)
                         }
                     }
                 }
-            });
-        } catch (Exception e) {
-            XposedBridge.log("Error hooking methods: " + e.getMessage() + "\n" + Log.getStackTraceString(e));
+            )
+            XposedBridge.log("FuckPackageList: Hooked successfully")
+        }.onFailure {
+            XposedBridge.log("FuckPackageList: Error: ${it.message}")
         }
     }
 
-    private static boolean shouldKeep(String packageName) {
-        if (MODE == Mode.VISIBLE) {
-            return PACKAGE_SET.contains(packageName);
-        } else {
-            return !PACKAGE_SET.contains(packageName);
+    /**
+     * 通用的列表过滤工具
+     */
+    private inline fun <reified T> filterList(param: XC_MethodHook.MethodHookParam, getPackageName: (T) -> String) {
+        config.loadIfUpdated("visible_list", "invisible_list")
+        if (!config.enabled) return
+
+        val originalList = param.result as? List<*> ?: return
+        val filteredList = originalList.filterIsInstance<T>().filter {
+            config.shouldKeep(getPackageName(it))
         }
+        param.result = filteredList
     }
-
-
-    private static XSharedPreferences getPref() {
-        XSharedPreferences pref = new XSharedPreferences(BuildConfig.APPLICATION_ID, PREFS_NAME);
-        return pref.getFile().canRead() ? pref : null;
-    }
-
-    private static void loadConfigIfUpdated() {
-        XSharedPreferences pref = getPref();
-        if (pref == null) return;
-
-        pref.reload();
-        long newTimestamp = pref.getLong(LAST_MODIFIED_KEY, -1);
-        if (newTimestamp == lastLoadedTimestamp) return;
-
-        lastLoadedTimestamp = newTimestamp;
-
-        ENABLED = pref.getBoolean(ENABLED_KEY, false);
-        int modeInt = pref.getInt(MODE_KEY, 0);  // 0 = VISIBLE, 1 = INVISIBLE
-        MODE = (modeInt == 1) ? Mode.INVISIBLE : Mode.VISIBLE;
-
-        Set<String> rawSet = pref.getStringSet(MODE == Mode.VISIBLE ? VISIBLE_LIST_KEY : INVISIBLE_LIST_KEY, null);
-        PACKAGE_SET = rawSet != null ? new HashSet<>(rawSet) : Collections.emptySet();
-    }
-
 }

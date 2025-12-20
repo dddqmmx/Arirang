@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "asia.nana7mi.arirang"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "asia.nana7mi.arirang"
@@ -18,18 +18,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        ndk {
-            abiFilters.clear()
-        }
-
         multiDexEnabled = false
-    }
-
-    splits {
-        abi {
-            isEnable = false
-            reset() // 保险
-        }
     }
 
     buildFeatures {
