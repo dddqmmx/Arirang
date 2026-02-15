@@ -17,6 +17,7 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import asia.nana7mi.arirang.ui.TestActivity
 
 class HomeFragment : Fragment() {
 
@@ -35,7 +36,7 @@ class HomeFragment : Fragment() {
         statusCard = view.findViewById<CardView>(R.id.status_card)
         statusText = view.findViewById<TextView>(R.id.status_text)
         if (isXposedActivation()){
-            statusCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.enabled_color));
+            context?.let { statusCard.setCardBackgroundColor(ContextCompat.getColor(it, R.color.enabled_color)) };
             statusText.setText(R.string.status_activated)
         }
         view.findViewById<FeatureItemView>(R.id.clipboard_setting_bottom).setOnClickListener{
@@ -56,6 +57,10 @@ class HomeFragment : Fragment() {
         }
         view.findViewById<FeatureItemView>(R.id.package_list_bottom).setOnClickListener{
             val intent = Intent(requireContext(), PackageListConfigActivity::class.java)
+            startActivity(intent)
+        }
+        view.findViewById<FeatureItemView>(R.id.test_view).setOnClickListener {
+            val intent = Intent(requireContext(), TestActivity::class.java)
             startActivity(intent)
         }
     }

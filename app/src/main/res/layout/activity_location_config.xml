@@ -1,10 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.LocationConfigActivity">
+    android:padding="16dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="刷新所有数据"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 原生部分 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Native Android API"
+            android:textStyle="bold"
+            android:textColor="#FF0000" />
+
+        <TextView
+            android:id="@+id/tv_native_cache"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="#F0F0F0"
+            android:text="原生(缓存): 等待中..."
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tv_native_real"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="#E0E0E0"
+            android:text="原生(实时): 等待中..."
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Fused 部分 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Google Fused Location API"
+            android:textStyle="bold"
+            android:textColor="#0000FF" />
+
+        <TextView
+            android:id="@+id/tv_fused_cache"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="#F0F0F0"
+            android:text="Fused(缓存): 等待中..."
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tv_fused_real"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="#E0E0E0"
+            android:text="Fused(实时): 等待中..." />
+
+    </LinearLayout>
+</ScrollView>

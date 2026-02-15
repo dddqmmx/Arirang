@@ -178,6 +178,7 @@
                 android:orientation="horizontal">
 
                 <asia.nana7mi.arirang.view.FeatureItemView
+                    android:id="@+id/test_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:featureName="@string/feature_permission_stats" />

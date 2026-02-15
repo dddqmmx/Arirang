@@ -1,13 +1,16 @@
 package asia.nana7mi.arirang.ui
 
+import android.content.Intent
 import asia.nana7mi.arirang.R
 import asia.nana7mi.arirang.ui.fragment.HomeFragment
 import asia.nana7mi.arirang.ui.fragment.SettingsFragment
 import asia.nana7mi.arirang.ui.fragment.UserFragment
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.util.concurrent.ServiceManager
 import java.util.Locale
 
 class MainActivity : BaseActivity() {
@@ -16,6 +19,10 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         installSplashScreen()
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+            startActivity(intent)
+        }
 
         val lang = Locale.getDefault().toString()
         Log.d("LANG", "当前语言: $lang")

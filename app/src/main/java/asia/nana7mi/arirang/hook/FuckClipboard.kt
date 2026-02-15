@@ -8,7 +8,6 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class FuckClipboard : IXposedHookLoadPackage {
-    private val config = HookConfig("clipboard_whitelist_prefs")
 
     companion object {
         private var opWriteClipboard: Int = -1
@@ -24,30 +23,27 @@ class FuckClipboard : IXposedHookLoadPackage {
 
         runCatching {
             val clipboardService = XposedHelpers.findClass("com.android.server.clipboard.ClipboardService", lpparam.classLoader)
-
             hookClipboard(clipboardService)
-
-            XposedBridge.log("FuckClipboard: Hooked successfully")
+            XposedBridge.log("FuckClipboard: hooked")
         }.onFailure {
-            XposedBridge.log("FuckClipboard: Hook failed: $it")
+            XposedBridge.log("FuckClipboard: hook failed: $it")
         }
     }
 
-    fun hookClipboard(clipboardService: Class<*>) {
+    private fun hookClipboard(clipboardService: Class<*>) {
         val hookCallback = object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                config.loadIfUpdated("whitelist", "blacklist")
-
                 val op = param.args[0] as Int
                 if (op == opWriteClipboard) return
-
                 val callingPackage = param.args[1] as String
-                if (config.shouldBlock(callingPackage)) {
-                    param.result = false
-                }
+                XposedBridge.log("FuckClipboard: clipboardAccessAllowed")
+
+                HookNotifyClient.notifyPermissionUsed(
+                    callingPackage,
+                    "READ_CLIPBOARD"
+                )
             }
         }
-
         // Android 15（8 参数）
         runCatching {
             XposedHelpers.findAndHookMethod(
@@ -81,6 +77,4 @@ class FuckClipboard : IXposedHookLoadPackage {
             )
         }
     }
-
-
 }

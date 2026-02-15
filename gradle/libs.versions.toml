@@ -1,24 +1,30 @@
 [versions]
-agp = "8.13.2"
+agp = "9.0.0"
 api = "82"
-coreSplashscreen = "1.0.1"
-googleGson = "2.10.1"
-kotlin = "2.0.21"
-coreKtx = "1.16.0"
+appcompatVersion = "1.6.1"
+coreSplashscreen = "1.2.0"
+googleGson = "2.13.2"
+gridlayout = "1.1.0"
+kotlin = "2.3.0"
+coreKtx = "1.17.0"
 junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-appcompat = "1.7.0"
-material = "1.12.0"
-activity = "1.10.1"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+appcompat = "1.7.1"
+material = "1.13.0"
+activity = "1.12.2"
 constraintlayout = "2.2.1"
-lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.10.1"
-composeBom = "2025.05.01"
+lifecycleRuntimeKtx = "2.10.0"
+activityCompose = "1.12.2"
+composeBom = "2025.12.01"
+playServicesLocation = "21.3.0"
+firebaseCrashlyticsBuildtools = "3.0.6"
 
 [libraries]
+androidx-appcompat-v161 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-gridlayout = { module = "androidx.gridlayout:gridlayout", version.ref = "gridlayout" }
 api = { module = "de.robv.android.xposed:api", version.ref = "api" }
 google-gson = { module = "com.google.code.gson:gson", version.ref = "googleGson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -38,6 +44,8 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

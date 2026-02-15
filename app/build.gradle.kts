@@ -12,18 +12,17 @@ android {
     defaultConfig {
         applicationId = "asia.nana7mi.arirang"
         minSdk = 34
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
         multiDexEnabled = false
     }
 
     buildFeatures {
         buildConfig = true
         compose = true
+        aidl = true
     }
 
     buildTypes {
@@ -39,12 +38,21 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        }
+    }
+
 }
 
 dependencies {
+    implementation(libs.androidx.appcompat.v161)
     implementation(libs.google.gson)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -54,8 +62,11 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.crashlytics.buildtools)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    implementation(libs.play.services.location)
+    implementation(libs.androidx.gridlayout)
     compileOnly(libs.api)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

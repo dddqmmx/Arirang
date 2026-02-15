@@ -77,6 +77,11 @@ class DeviceInfoConfigActivity : AppCompatActivity() {
         info.append("API 级别 (SDK): ${Build.VERSION.SDK_INT}\n")
         info.append("Fingerprint: ${Build.FINGERPRINT}\n")
 
+        val tm = getSystemService(TELEPHONY_SERVICE) as android.telephony.TelephonyManager
+        val simCountry = tm.simCountryIso?.uppercase() ?: "Unknown"
+        info.append("SIM 国家 (ISO): $simCountry\n")
+
+
         // 显示信息
         textView.text = info.toString()
     }

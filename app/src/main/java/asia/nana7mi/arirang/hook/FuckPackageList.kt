@@ -47,6 +47,40 @@ class FuckPackageList : IXposedHookLoadPackage {
                     }
                 }
             )
+
+            // 拦截单包查询
+            XposedHelpers.findAndHookMethod(
+                computerEngine, "getPackageInfoInternal",
+                String::class.java, Long::class.java, Long::class.java, Int::class.java, Int::class.java,
+                object : XC_MethodHook() {
+                    override fun beforeHookedMethod(param: MethodHookParam) {
+                        val packageName = param.args[0] as String
+                        if (!config.shouldKeep(packageName)) {
+                            // 模拟包不存在的情况，返回 null
+                            param.result = null
+                        }
+                    }
+                }
+            )
+
+            // 2. 拦截意图搜索 (如查询所有 Launcher 应用)
+            XposedHelpers.findAndHookMethod(
+                computerEngine, "queryIntentActivitiesInternal",
+                android.content.Intent::class.java, String::class.java, Long::class.java, Long::class.java, Int::class.java,Int::class.java,Int::class.java,
+                Boolean::class.java,Boolean::class.java,
+                object : XC_MethodHook() {
+                    override fun afterHookedMethod(param: MethodHookParam) {
+                        val list = param.result as? List<*> ?: return
+                        val filtered = list.filter { resolveInfo ->
+                            val activityInfo = XposedHelpers.getObjectField(resolveInfo, "activityInfo")
+                            val pkg = XposedHelpers.getObjectField(activityInfo, "packageName") as String
+                            config.shouldKeep(pkg)
+                        }
+                        param.result = filtered
+                    }
+                }
+            )
+
             XposedBridge.log("FuckPackageList: Hooked successfully")
         }.onFailure {
             XposedBridge.log("FuckPackageList: Error: ${it.message}")

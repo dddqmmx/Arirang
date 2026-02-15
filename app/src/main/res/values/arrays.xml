@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="xposedscope">
-        <item>x</item>
+        <item>android</item>
+        <item>com.android.phone</item>
     </string-array>
     <array name="whitelist_blacklist_mode_options">
         <item>白名单</item>

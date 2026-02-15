@@ -6,6 +6,7 @@ import android.content.Context
 import android.util.Log
 
 class ArirangApp : Application() {
+
     override fun attachBaseContext(base: Context) {
         val prefs = base.getSharedPreferences("settings", MODE_PRIVATE)
         val lang = prefs.getString("language", null)
