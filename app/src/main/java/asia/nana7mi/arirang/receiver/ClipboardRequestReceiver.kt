@@ -17,7 +17,9 @@ class ClipboardRequestReceiver : BroadcastReceiver() {
         // 创建一个 ResultReceiver 来接收 Activity 返回结果
         val receiver = object : ResultReceiver(Handler(Looper.getMainLooper())) {
             override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
-                if (resultCode == 1) {
+                if (resultCode == ConfirmDialogActivity.RESULT_ALLOW_ONCE ||
+                    resultCode == ConfirmDialogActivity.RESULT_ALLOW_ALWAYS
+                ) {
                     // 用户允许
                     Toast.makeText(context, "$callingPackage 允许访问剪切板", Toast.LENGTH_SHORT).show()
                 } else {

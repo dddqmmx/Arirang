@@ -9,6 +9,15 @@ import androidx.appcompat.app.AppCompatActivity
 
 // 1. 必须继承 AppCompatActivity (或 ComponentActivity) 才能使用 Dispatcher
 class ConfirmDialogActivity : AppCompatActivity() {
+    companion object {
+        const val RESULT_DENY_ONCE = 0
+        const val RESULT_ALLOW_ONCE = 1
+        const val RESULT_ALLOW_ALWAYS = 2
+        const val RESULT_DENY_ALWAYS = 3
+    }
+
+    @Volatile
+    private var resultSent = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,25 +36,28 @@ class ConfirmDialogActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 // 当用户触发返回手势时，视为"拒绝"
-                sendResult(receiver, 0)
+                sendResult(receiver, RESULT_DENY_ONCE)
             }
         })
 
         AlertDialog.Builder(this)
             .setTitle("剪切板访问警告")
-            .setMessage("应用 [$pkgName] 正在尝试读取剪切板。\n是否允许？")
+            .setMessage("应用 [$pkgName] 正在尝试读取剪切板。\n请选择策略（关闭弹窗=本次拒绝）")
             // 3. 关键：如果你希望返回键能关闭弹窗并触发上面的回调，
             // 建议设置 Cancelable 为 true，并监听 OnCancel
             .setCancelable(true)
-            .setPositiveButton("允许") { _, _ ->
-                sendResult(receiver, 1)
+            .setPositiveButton("允许一次") { _, _ ->
+                sendResult(receiver, RESULT_ALLOW_ONCE)
             }
-            .setNegativeButton("拒绝") { _, _ ->
-                sendResult(receiver, 0)
+            .setNeutralButton("始终允许") { _, _ ->
+                sendResult(receiver, RESULT_ALLOW_ALWAYS)
+            }
+            .setNegativeButton("始终拒绝") { _, _ ->
+                sendResult(receiver, RESULT_DENY_ALWAYS)
             }
             // 监听对话框被"取消"（例如点击外部或按返回键关闭 Dialog 时）
             .setOnCancelListener {
-                sendResult(receiver, 0)
+                sendResult(receiver, RESULT_DENY_ONCE)
             }
             .setOnDismissListener {
                 // 确保 Activity 随 Dialog 销毁
@@ -55,6 +67,8 @@ class ConfirmDialogActivity : AppCompatActivity() {
     }
 
     private fun sendResult(receiver: ResultReceiver?, resultCode: Int) {
+        if (resultSent) return
+        resultSent = true
         receiver?.send(resultCode, null)
         finish() // 发送结果后关闭 Activity
     }

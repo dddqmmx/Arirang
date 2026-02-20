@@ -1,5 +1,6 @@
 package asia.nana7mi.arirang.hook;
 
-oneway interface IHookNotify {
+interface IHookNotify {
+    int requestClipboardRead(String pkgName, int uid, int userId, long timeoutMs);
     void onPermissionUsed(String pkgName, String opName);
 }
