@@ -1,0 +1,8 @@
+package asia.nana7mi.arirang.hook
+
+import de.robv.android.xposed.callbacks.XC_LoadPackage
+
+interface HookModule {
+    fun matches(packageName: String): Boolean
+    fun onHook(lpparam : XC_LoadPackage.LoadPackageParam)
+}

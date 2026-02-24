@@ -23,7 +23,6 @@ class FuckLocation : IXposedHookLoadPackage {
                 "com.android.server.location.LocationManagerService",
                 classLoader
             )
-
             // 1. 劫持最后已知位置 (getLastLocation)
             hookLastLocation(lmsClass, classLoader)
 

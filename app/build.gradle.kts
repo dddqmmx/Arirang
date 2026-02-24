@@ -71,6 +71,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+    implementation("androidx.compose.material3:material3:1.4.0") // 或更新版本
+    implementation("androidx.compose.ui:ui:1.10.3")
+    implementation("androidx.compose.material:material-icons-extended:1.7.8") // 用于更多图标
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)

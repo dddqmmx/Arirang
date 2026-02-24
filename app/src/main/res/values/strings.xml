@@ -58,4 +58,5 @@
         <item>zh</item>
         <item>ja</item>
     </string-array>
+    <string name="title_activity_init">InitActivity</string>
 </resources>
