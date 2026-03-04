@@ -53,7 +53,7 @@
         <item>日语</item>
     </string-array>
 
-    <string-array name="language_codes">
+    <string-array name="settings_language_codes">
         <item>null</item>
         <item>zh</item>
         <item>ja</item>

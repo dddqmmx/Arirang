@@ -19,7 +19,7 @@ class LanguageSettingsActivity : BaseActivity() {
 
         // 加载语言显示名和对应的代码
         val names = resources.getStringArray(R.array.languages)
-        val codes = resources.getStringArray(R.array.language_codes)
+        val codes = resources.getStringArray(R.array.settings_language_codes)
 
         // 合并成 LanguageItem 列表
         val savedLang = getSharedPreferences("settings", MODE_PRIVATE)

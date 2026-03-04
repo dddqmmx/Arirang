@@ -1,54 +1,57 @@
 package asia.nana7mi.arirang.ui
 
+import android.app.LocaleManager
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
+import android.os.LocaleList
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.animation.*
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.LocaleListCompat
+import asia.nana7mi.arirang.R // 确保引用你的R文件
 import asia.nana7mi.arirang.ui.ui.theme.ArirangTheme
+import java.util.Locale
+
+// 数据模型：用于存储选项的显示名称和实际值
+data class OptionItem(val label: String, val value: String)
 
 class InitActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme(
-                colorScheme = dynamicDarkColorScheme(this) // 推荐使用暗色模式或动态取色以获得高级感
-            ) {
+            val colorScheme = getAppColorScheme(this)
+            MaterialTheme(colorScheme = colorScheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -60,10 +63,9 @@ class InitActivity : ComponentActivity() {
     }
 }
 
-// 简单的动态取色回退（如果设备不支持动态取色）
 @Composable
-fun dynamicDarkColorScheme(context: android.content.Context): ColorScheme {
-    return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+fun getAppColorScheme(context: Context): ColorScheme {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         dynamicDarkColorScheme(context)
     } else {
         darkColorScheme()
@@ -74,7 +76,6 @@ fun dynamicDarkColorScheme(context: android.content.Context): ColorScheme {
 fun SetupFlow() {
     var step by remember { mutableIntStateOf(1) }
 
-    // 简单的导航动画
     AnimatedContent(
         targetState = step,
         transitionSpec = {
@@ -85,27 +86,106 @@ fun SetupFlow() {
                 (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
                     slideOutHorizontally { width -> width } + fadeOut())
             }
-        }, label = "ScreenTransition"
+        },
+        label = "ScreenTransition"
     ) { targetStep ->
         when (targetStep) {
             1 -> LanguageRegionScreen(onNext = { step = 2 })
-            2 -> WarningScreen(onBack = { step = 1 }) // 演示返回，实际可能直接进入主页
+            2 -> WarningScreen(onBack = { step = 1 })
         }
     }
 }
 
 // =======================
-// 第一屏：语言与地区
+// 第一屏：语言与地区 (逻辑增强版)
 // =======================
 @Composable
 fun LanguageRegionScreen(onNext: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+    val context = LocalContext.current
+
+    // --- 读取 XML 资源 ---
+    val languageLabels = stringArrayResource(id = R.array.language_names)
+    val languageCodes = stringArrayResource(id = R.array.language_codes)
+    val regionLabels = stringArrayResource(id = R.array.region_names)
+    val regionCodes = stringArrayResource(id = R.array.region_codes)
+
+    // 组合成对象列表
+    val languages = remember(languageLabels, languageCodes) {
+        languageLabels.zip(languageCodes) { label, code -> OptionItem(label, code) }
+    }
+    val regions = remember(regionLabels, regionCodes) {
+        regionLabels.zip(regionCodes) { label, code -> OptionItem(label, code) }
+    }
+
+    // --- 状态管理 ---
+    // 默认选中第一个或从配置读取(此处简化为默认值)
+    var currentLanguage by remember { mutableStateOf(languages.find { it.value == getCurrentAppLanguageCode() } ?: languages.first()) }
+    var currentRegion by remember { mutableStateOf(regions.first()) }
+    val isExtreme = currentRegion.value == "KP"
+
+    var showLangDialog by remember { mutableStateOf(false) }
+    var showRegionDialog by remember { mutableStateOf(false) }
+
+    // --- 弹窗组件调用 ---
+    if (showLangDialog) {
+        CommonSelectionDialog(
+            title = "Select Language",
+            options = languages,
+            selectedOption = currentLanguage,
+            onDismiss = { showLangDialog = false },
+            onOptionSelected = { selected ->
+                currentLanguage = selected
+                showLangDialog = false
+                // 执行真正的语言切换
+                applyLanguage(selected.value)
+            }
+        )
+    }
+
+    if (showRegionDialog) {
+        CommonSelectionDialog(
+            title = "Select Region",
+            options = regions,
+            selectedOption = currentRegion,
+            onDismiss = { showRegionDialog = false },
+            onOptionSelected = { selected ->
+                currentRegion = selected
+                showRegionDialog = false
+                // TODO: 这里可以将 selected.value 保存到 SharedPreferences
+            }
+        )
+    }
+
+    // --- UI 布局 ---
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        // 🔴 呼吸红色背景
+        if (isExtreme) {
+            val pulse by rememberInfiniteTransition(label = "pulse").animateFloat(
+                initialValue = 0.04f,
+                targetValue = 0.5f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(900),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "pulseAnim"
+            )
+
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Color.Red.copy(alpha = pulse)
+                    )
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // 顶部留白与标题
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -139,7 +219,6 @@ fun LanguageRegionScreen(onNext: () -> Unit) {
             )
         }
 
-        // 中间选择区域
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.weight(1f)
@@ -147,34 +226,52 @@ fun LanguageRegionScreen(onNext: () -> Unit) {
             SelectionCard(
                 icon = Icons.Default.Public,
                 label = "Language / 语言",
-                value = "简体中文 (zh-CN)"
+                value = currentLanguage.label, // 显示动态选中的值
+                onClick = { showLangDialog = true }
             )
             SelectionCard(
-                icon = Icons.Default.Public,
+                icon = Icons.Default.Public, // 这里可以换个图标，比如 Icons.Default.Place
                 label = "Region / 地区",
-                value = "Global / Worldwide"
+                value = currentRegion.label, // 显示动态选中的值
+                onClick = { showRegionDialog = true }
             )
+            AnimatedVisibility(
+                visible = isExtreme,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Text(
+                    text = "⚠ EXTREME SECURITY MODE ENABLED",
+                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
         }
 
-        // 底部按钮
         Button(
             onClick = onNext,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(28.dp) // 药丸形状
+            shape = RoundedCornerShape(28.dp)
         ) {
             Text("继续 / Next", fontSize = 18.sp)
         }
     }
-}
+}}
 
+
+// =======================
+// 通用选择卡片 (支持点击)
+// =======================
 @Composable
-fun SelectionCard(icon: ImageVector, label: String, value: String) {
+fun SelectionCard(icon: ImageVector, label: String, value: String, onClick: () -> Unit) {
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        onClick = { /* TODO: 弹出选择器 */ }
+        onClick = onClick // 传递点击事件
     ) {
         Row(
             modifier = Modifier
@@ -183,7 +280,7 @@ fun SelectionCard(icon: ImageVector, label: String, value: String) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
@@ -212,62 +309,93 @@ fun SelectionCard(icon: ImageVector, label: String, value: String) {
 }
 
 // =======================
-// 第二屏：环境警告
+// 通用选择弹窗 (核心逻辑)
+// =======================
+@Composable
+fun CommonSelectionDialog(
+    title: String,
+    options: List<OptionItem>,
+    selectedOption: OptionItem?,
+    onDismiss: () -> Unit,
+    onOptionSelected: (OptionItem) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            // 使用 LazyColumn 处理长列表
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp) // 限制高度
+            ) {
+                items(options) { item ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onOptionSelected(item) }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (item == selectedOption),
+                            onClick = { onOptionSelected(item) }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = item.label,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+// =======================
+// 工具函数：语言切换逻辑
+// =======================
+
+// 真正应用语言的方法
+fun applyLanguage(code: String) {
+    val localeList = if (code == "system") {
+        LocaleListCompat.getEmptyLocaleList() // 跟随系统
+    } else {
+        LocaleListCompat.forLanguageTags(code)
+    }
+    // 这行代码会重启当前的 Activity 以应用新语言
+    AppCompatDelegate.setApplicationLocales(localeList)
+}
+
+// 获取当前应用语言代码，用于回显 UI
+fun getCurrentAppLanguageCode(): String {
+    val currentLocales = AppCompatDelegate.getApplicationLocales()
+    if (currentLocales.isEmpty) return "system"
+    return currentLocales.toLanguageTags()
+}
+
+// =======================
+// 第二屏：保持原样 (稍微清理)
 // =======================
 @Composable
 fun WarningScreen(onBack: () -> Unit) {
-    var isChecked by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Scaffold(
         bottomBar = {
-            Surface(
-                tonalElevation = 3.dp,
-                shadowElevation = 8.dp
-            ) {
-                Column(modifier = Modifier.padding(24.dp)) {
-                    // 同意协议行
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .toggleable(
-                                value = isChecked,
-                                onValueChange = { isChecked = it },
-                                role = Role.Checkbox
-                            )
-                            .padding(horizontal = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Checkbox(
-                            checked = isChecked,
-                            onCheckedChange = null // 依靠 Row 的点击
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "我已理解风险，并愿承担后果",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Button(
-                        onClick = { /* TODO: 进入App */ },
-                        enabled = isChecked,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        )
-                    ) {
-                        Text("进入软件", fontSize = 18.sp)
-                    }
+            Column(modifier = Modifier.padding(24.dp)) {
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = { /* TODO: 进入App */ },
+                    modifier = Modifier.fillMaxWidth().height(56.dp)
+                ) {
+                    Text("进入软件", fontSize = 18.sp)
                 }
+                // 如果需要返回上一步，可以加个返回键
             }
         }
     ) { paddingValues ->
@@ -278,29 +406,22 @@ fun WarningScreen(onBack: () -> Unit) {
                 .verticalScroll(scrollState)
         ) {
             Spacer(modifier = Modifier.height(40.dp))
-
-            // 头部警告图标
             Icon(
                 imageVector = Icons.Default.Security,
                 contentDescription = null,
-                modifier = Modifier
-                    .size(64.dp)
-                    .align(Alignment.CenterHorizontally),
-                tint = MaterialTheme.colorScheme.error
+                modifier = Modifier.size(64.dp).align(Alignment.CenterHorizontally),
+                tint = MaterialTheme.colorScheme.primary
             )
-
             Spacer(modifier = Modifier.height(24.dp))
-
             Text(
                 text = "运行环境检查",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 1. 依赖项 (信息卡片)
+            // 核心依赖卡片
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -325,17 +446,16 @@ fun WarningScreen(onBack: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "本软件依赖 Xposed / Zygisk 运行。\n若未在受支持环境下运行，任何功能都无法生效。",
+                            text = "本软件依赖 Xposed / Zygisk 运行。\n若未在受支持环境下运行，任何功能都无法生效",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. 信任前提 (警告卡片)
+            // 信任根基卡片
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
@@ -351,47 +471,30 @@ fun WarningScreen(onBack: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "信任根基",
+                            text = "使用前提",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.error,
                             fontWeight = FontWeight.Bold
                         )
                     }
-
                     Spacer(modifier = Modifier.height(12.dp))
-
-                    Divider(color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.2f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.2f))
                     Spacer(modifier = Modifier.height(8.dp))
-
                     Text(
-                        text = "本软件只能在“系统本身可信”的前提下提供隐私保护。",
+                        text = "本软件不是万能的只能在“系统本身可信”的前提下提供隐私保护，而对本就不可信的系统无能为力",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold
                     )
-
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "如果存在以下情况：", style = MaterialTheme.typography.labelLarge)
+                    Text(text = "如以下情况：", style = MaterialTheme.typography.labelLarge)
                     Spacer(modifier = Modifier.height(4.dp))
-
                     RiskItem("系统已被植入后门")
                     RiskItem("ROM 来源不可信")
                     RiskItem("基带或内核被篡改")
                     RiskItem("Root 权限被恶意程序控制")
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            // 3. 局限性说明
-            Text(
-                text = "本软件不是万能的。\n它只能在可信系统上增强隐私，而对本就不安全的系统无能为力。",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(40.dp)) // 底部留白，防遮挡
         }
     }
 }
@@ -399,13 +502,11 @@ fun WarningScreen(onBack: () -> Unit) {
 @Composable
 fun RiskItem(text: String) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = Icons.Default.Check, // 或者用圆点
+            imageVector = Icons.Default.Close,
             contentDescription = null,
             modifier = Modifier.size(16.dp),
             tint = MaterialTheme.colorScheme.error
@@ -416,28 +517,5 @@ fun RiskItem(text: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
-    }
-}
-
-@Preview
-@Composable
-fun DynamicDarkColorSchemePreview() {
-    ArirangTheme {
-        Surface {
-            Column {
-                Text("Primary", color = MaterialTheme.colorScheme.primary)
-                Text("Secondary", color = MaterialTheme.colorScheme.secondary)
-                Text("Tertiary", color = MaterialTheme.colorScheme.tertiary)
-                Text("Background", color = MaterialTheme.colorScheme.background)
-                Text("Surface", color = MaterialTheme.colorScheme.surface)
-                Text("Error", color = MaterialTheme.colorScheme.error)
-                Text("On Primary", color = MaterialTheme.colorScheme.onPrimary)
-                Text("On Secondary", color = MaterialTheme.colorScheme.onSecondary)
-                Text("On Tertiary", color = MaterialTheme.colorScheme.onTertiary)
-                Text("On Background", color = MaterialTheme.colorScheme.onBackground)
-                Text("On Surface", color = MaterialTheme.colorScheme.onSurface)
-                Text("On Error", color = MaterialTheme.colorScheme.onError)
-            }
-        }
     }
 }

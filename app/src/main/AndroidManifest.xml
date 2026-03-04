@@ -38,15 +38,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Arirang">
-        <activity
-            android:name=".ui.InitActivity"
-            android:exported="false"
-            android:label="@string/title_activity_init"
-            android:theme="@style/Theme.Arirang" />
-        <!--
-            修复点 1: 移除 android:permission 属性，否则 system_server 无法绑定。
-            修复点 2: 确保 exported 为 true。
-        -->
         <service
             android:name=".service.HookNotifyService"
             android:exported="true"
@@ -108,16 +99,19 @@
         <meta-data
             android:name="xposedscope"
             android:resource="@array/xposedscope" />
-
+        <!-- 1. 设置 SplashActivity 为启动页 (Launcher) -->
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.InitActivity"
+            android:exported="true"/>
+        <activity android:name=".ui.MainActivity"/>
     </application>
 
 </manifest>
