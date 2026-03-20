@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="whitelist_blacklist_mode_options">
-        <item>Whitelist</item>
-        <item>Blacklist</item>
+        <item>Whitelist (Allow All)</item>
+        <item>Blacklist (Deny All)</item>
+        <item>Ask Mode</item>
     </array>
     <array name="visibility_list_options">
         <item>Visible</item>

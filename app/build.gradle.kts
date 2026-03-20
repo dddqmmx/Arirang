@@ -65,15 +65,16 @@ dependencies {
     implementation(libs.firebase.crashlytics.buildtools)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.play.services.location)
     implementation(libs.androidx.gridlayout)
     compileOnly(libs.api)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation("androidx.compose.material3:material3:1.4.0") // 或更新版本
-    implementation("androidx.compose.ui:ui:1.10.3")
-    implementation("androidx.compose.material:material-icons-extended:1.7.8") // 用于更多图标
+    implementation(libs.androidx.compose.material3) // 或更新版本
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material.icons.extended) // 用于更多图标
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)

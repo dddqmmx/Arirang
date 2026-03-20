@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import asia.nana7mi.arirang.data.datastore.AppPreferences
+import com.google.android.material.color.DynamicColors
 
 class ArirangApp : Application() {
 
@@ -16,5 +17,7 @@ class ArirangApp : Application() {
             val localeList = LocaleListCompat.forLanguageTags(savedLang)
             AppCompatDelegate.setApplicationLocales(localeList)
         }
+
+        DynamicColors.applyToActivitiesIfAvailable(this)
     }
 }

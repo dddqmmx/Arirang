@@ -9,9 +9,9 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="20dp">
 
-        <!-- 首页 -->
+        <!-- 首页标题 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -20,38 +20,40 @@
             android:textStyle="bold"
             android:layout_marginBottom="20dp" />
 
+        <!-- 状态卡片 -->
         <androidx.cardview.widget.CardView
             android:id="@+id/status_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:elevation="4dp"
-            app:cardBackgroundColor="@color/disabled_color"
-            app:cardCornerRadius="8dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            android:background="?attr/colorSurface"
+            style="@style/Widget.Material3.CardView.Filled">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/status_title"
-                    android:textSize="18sp"
-                    android:textColor="@color/black"
-                    android:textStyle="bold"/>
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="?attr/colorOnSurface"/>
 
                 <TextView
                     android:id="@+id/status_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:text="@string/status_deactivated"
-                    android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
+
         </androidx.cardview.widget.CardView>
 
 
@@ -60,53 +62,75 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/category_permission"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="6dp"/>
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="8dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="12dp">
+            android:orientation="horizontal"
+            android:layout_marginBottom="20dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <asia.nana7mi.arirang.view.FeatureItemView
+                android:id="@+id/clipboard_setting_bottom"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_weight="1"
+                app:featureName="@string/feature_clipboard" />
 
-                <asia.nana7mi.arirang.view.FeatureItemView
-                    android:id="@+id/clipboard_setting_bottom"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    app:featureName="@string/feature_clipboard" />
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="match_parent" />
 
-                <Space
-                    android:layout_width="8dp"
-                    android:layout_height="match_parent" />
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-            </LinearLayout>
+            <asia.nana7mi.arirang.view.FeatureItemView
+                android:id="@+id/sensor_info_setting_bottom"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:featureName="@string/feature_sensor_info" />
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="20dp">
+
+            <asia.nana7mi.arirang.view.FeatureItemView
+                android:id="@+id/bluetooth_list_bottom"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:featureName="@string/feature_bluetooth_list" />
+
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="match_parent" />
+
+            <asia.nana7mi.arirang.view.FeatureItemView
+                android:id="@+id/wifi_setting_bottom"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:featureName="@string/feature_wifi_list" />
+        </LinearLayout>
+
 
         <!-- 篡改 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/category_anonymization"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="6dp"/>
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="8dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -121,7 +145,7 @@
                     app:featureName="@string/feature_app_list" />
 
                 <Space
-                    android:layout_width="8dp"
+                    android:layout_width="12dp"
                     android:layout_height="match_parent" />
 
                 <asia.nana7mi.arirang.view.FeatureItemView
@@ -132,10 +156,13 @@
                     app:featureName="@string/feature_sim_info" />
             </LinearLayout>
 
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
                 <asia.nana7mi.arirang.view.FeatureItemView
                     android:id="@+id/location_setting_bottom"
                     android:layout_width="0dp"
@@ -144,47 +171,35 @@
                     app:featureName="@string/feature_location" />
 
                 <Space
-                    android:layout_width="8dp"
+                    android:layout_width="12dp"
                     android:layout_height="match_parent" />
+
                 <asia.nana7mi.arirang.view.FeatureItemView
                     android:id="@+id/device_info_setting_bottom"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     app:featureName="@string/feature_device_info" />
-
-
             </LinearLayout>
+
         </LinearLayout>
+
 
         <!-- 审计 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/category_audit"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="6dp"/>
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="8dp"/>
 
-        <LinearLayout
+        <asia.nana7mi.arirang.view.FeatureItemView
+            android:id="@+id/test_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="12dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <asia.nana7mi.arirang.view.FeatureItemView
-                    android:id="@+id/test_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:featureName="@string/feature_permission_stats" />
-            </LinearLayout>
-        </LinearLayout>
-
+            app:featureName="@string/feature_permission_stats" />
 
     </LinearLayout>
+
 </ScrollView>

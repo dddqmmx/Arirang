@@ -15,9 +15,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.compose.material3.MaterialTheme
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import asia.nana7mi.arirang.ui.TestActivity
+import com.google.android.material.color.MaterialColors
 
 class HomeFragment : Fragment() {
 
@@ -36,7 +38,10 @@ class HomeFragment : Fragment() {
         statusCard = view.findViewById<CardView>(R.id.status_card)
         statusText = view.findViewById<TextView>(R.id.status_text)
         if (isXposedActivation()){
-            context?.let { statusCard.setCardBackgroundColor(ContextCompat.getColor(it, R.color.enabled_color)) };
+            context?.let {
+                val color = MaterialColors.getColor(statusCard, com.google.android.material.R.attr.colorPrimaryContainer)
+                statusCard.setCardBackgroundColor(color)
+            }
             statusText.setText(R.string.status_activated)
         }
         view.findViewById<FeatureItemView>(R.id.clipboard_setting_bottom).setOnClickListener{

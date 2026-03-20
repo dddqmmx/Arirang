@@ -5,8 +5,19 @@
         <item>com.android.phone</item>
     </string-array>
     <array name="whitelist_blacklist_mode_options">
-        <item>白名单</item>
-        <item>黑名单</item>
+        <item>白名单模式 (全部允许)</item>
+        <item>黑名单模式 (全部拒绝)</item>
+        <item>询问模式</item>
+    </array>
+    <array name="permission_options">
+        <item>@string/permission_allow</item>
+        <item>@string/permission_deny</item>
+        <item>@string/permission_ask</item>
+    </array>
+    <array name="app_filter_options">
+        <item>@string/filter_all_apps</item>
+        <item>@string/filter_user_apps</item>
+        <item>@string/filter_system_apps</item>
     </array>
     <array name="visibility_list_options">
         <item>可见</item>

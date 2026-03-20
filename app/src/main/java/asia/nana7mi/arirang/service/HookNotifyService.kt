@@ -9,65 +9,113 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.ResultReceiver
 import androidx.core.content.edit
+import asia.nana7mi.arirang.data.datastore.ClipboardPromptPrefs
 import asia.nana7mi.arirang.hook.IHookNotify
 import asia.nana7mi.arirang.ui.ConfirmDialogActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import java.security.Policy
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
+/**
+ * HookNotifyService 是一个后台 Service，用于处理应用对剪贴板访问的请求。
+ * 它提供 IPC 接口，允许其他应用通过 AIDL 调用 requestClipboardRead 来获取用户允许或拒绝的结果。
+ *
+ * 核心逻辑：
+ * 1. 支持 Always Allow / Always Deny 策略。
+ * 2. 支持弹出确认对话框让用户决定。
+ * 3. 请求有超时机制，防止 UI 未响应导致阻塞。
+ * 4. 并发请求通过 ConcurrentHashMap 管理，避免过载。
+ */
 class HookNotifyService : Service() {
+
     companion object {
+        // 内部决策值：允许或拒绝
         private const val DECISION_DENY = 0
         private const val DECISION_ALLOW = 1
 
-        private const val UI_RESULT_DENY_ONCE = 0
-        private const val UI_RESULT_ALLOW_ONCE = 1
-        private const val UI_RESULT_ALLOW_ALWAYS = 2
-        private const val UI_RESULT_DENY_ALWAYS = 3
+        // UI 返回结果码
+        private const val UI_RESULT_DENY_ONCE = 0       // 本次拒绝
+        private const val UI_RESULT_ALLOW_ONCE = 1      // 本次允许
+        private const val UI_RESULT_ALLOW_ALWAYS = 2    // 永久允许
+        private const val UI_RESULT_DENY_ALWAYS = 3     // 永久拒绝
 
-        private const val DEFAULT_TIMEOUT_MS = 2500L
-        private const val MAX_TIMEOUT_MS = 3000L
-        private const val MAX_PENDING_REQUESTS = 8
-        private const val LATE_DECISION_GRACE_MS = 15_000L
-
-        private const val POLICY_PREFS = "clipboard_prompt_policy_prefs"
-        private const val KEY_ALWAYS_ALLOW = "always_allow"
-        private const val KEY_ALWAYS_DENY = "always_deny"
+        private const val DEFAULT_TIMEOUT_MS = 2500L    // 默认超时 2.5 秒
+        private const val MAX_TIMEOUT_MS = 3000L        // 最大超时 3 秒
+        private const val MAX_PENDING_REQUESTS = 8      // 最大同时等待请求数
+        private const val LATE_DECISION_GRACE_MS = 15_000L // UI 决策延迟的宽限时间 15 秒
     }
 
+    // 主线程 Handler，用于 UI 操作
     private val mainHandler = Handler(Looper.getMainLooper())
+
+    // 请求 ID 生成器，确保每个请求唯一
     private val requestIdGenerator = AtomicLong(1L)
+
+    // 存放待处理请求的 map
     private val pendingRequests = ConcurrentHashMap<Long, PendingRequest>()
+
+    // 策略锁，用于同步 alwaysAllowPackages 和 alwaysDenyPackages
     private val policyLock = Any()
 
-    private lateinit var policyPrefs: SharedPreferences
+    // 永久允许和永久拒绝的应用包名集合
     private var alwaysAllowPackages = mutableSetOf<String>()
     private var alwaysDenyPackages = mutableSetOf<String>()
 
+    /**
+     * 内部类表示一个待处理请求
+     * @param latch 用于阻塞请求线程，直到用户决策返回
+     * @param decision 用户最终决策
+     * @param timedOut 请求是否超时
+     */
     private data class PendingRequest(
         val latch: CountDownLatch = CountDownLatch(1),
         @Volatile var decision: Int? = null,
         @Volatile var timedOut: Boolean = false
     )
 
-    // Binder 用于 IPC 回调
+    /**
+     * Binder 对象，实现 AIDL 接口 IHookNotify
+     * 提供给其他进程调用
+     */
     private val binder = object : IHookNotify.Stub() {
+
+        /**
+         * 请求读取剪贴板
+         * @param pkgName 请求的应用包名
+         * @param uid 请求的用户 ID
+         * @param userId Android 系统的用户 ID
+         * @param timeoutMs 等待用户决策的超时时间
+         * @return DECISION_ALLOW 或 DECISION_DENY
+         */
         override fun requestClipboardRead(pkgName: String, uid: Int, userId: Int, timeoutMs: Long): Int {
+            // 永久允许的应用直接返回允许
             if (isAlwaysAllowed(pkgName)) return DECISION_ALLOW
+            // 永久拒绝的应用直接返回拒绝
             if (isAlwaysDenied(pkgName)) return DECISION_DENY
 
+            // 超过最大待处理请求数则直接拒绝
             if (pendingRequests.size >= MAX_PENDING_REQUESTS) return DECISION_DENY
 
+            // 为本次请求生成唯一 ID，并存储 PendingRequest 对象
             val requestId = requestIdGenerator.getAndIncrement()
             val pending = PendingRequest()
             pendingRequests[requestId] = pending
 
+            // 构建 ResultReceiver 用于接收 UI 决策
             val receiver = buildDecisionReceiver(requestId, pkgName)
+
+            // 在主线程启动确认对话框
             mainHandler.post {
                 launchDialog(pkgName, receiver)
             }
 
+            // 阻塞当前线程等待用户决策或超时
             return try {
                 val effectiveTimeout = timeoutMs.coerceIn(200L, MAX_TIMEOUT_MS)
                 val completed = pending.latch.await(
@@ -75,10 +123,12 @@ class HookNotifyService : Service() {
                     TimeUnit.MILLISECONDS
                 )
                 if (!completed) {
+                    // 超时未决策，标记并安排清理
                     pending.timedOut = true
                     scheduleCleanup(requestId)
                     DECISION_DENY
                 } else {
+                    // 移除请求并返回用户决策
                     pendingRequests.remove(requestId)
                     pending.decision ?: DECISION_DENY
                 }
@@ -89,7 +139,13 @@ class HookNotifyService : Service() {
             }
         }
 
+        /**
+         * 当应用使用权限时调用（例如读取剪贴板）
+         * @param pkgName 应用包名
+         * @param opName 操作名称
+         */
         override fun onPermissionUsed(pkgName: String, opName: String) {
+            // 弹出确认对话框提醒用户
             mainHandler.post {
                 launchDialog(pkgName, null)
             }
@@ -98,16 +154,22 @@ class HookNotifyService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        policyPrefs = getSharedPreferences(POLICY_PREFS, MODE_PRIVATE)
+        // 启动时加载策略
         loadPolicy()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // 不会自动重启
         return START_NOT_STICKY
     }
 
     override fun onBind(intent: Intent): IBinder = binder
 
+    /**
+     * 启动确认对话框 Activity
+     * @param pkgName 请求的应用包名
+     * @param receiver 用于回传决策结果
+     */
     private fun launchDialog(pkgName: String, receiver: ResultReceiver?) {
         val intent = Intent(this, ConfirmDialogActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -125,26 +187,33 @@ class HookNotifyService : Service() {
         try {
             startActivity(intent, options.toBundle())
         } catch (_: Exception) {
+            // 如果无法启动 Activity，默认拒绝
             receiver?.send(UI_RESULT_DENY_ONCE, Bundle.EMPTY)
         }
     }
 
+    /**
+     * 构建 ResultReceiver，用于接收 UI 决策并通知 PendingRequest
+     */
     private fun buildDecisionReceiver(
         requestId: Long,
         pkgName: String
     ): ResultReceiver {
         return object : ResultReceiver(mainHandler) {
             override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+                // 更新永久允许/拒绝策略
                 when (resultCode) {
                     UI_RESULT_ALLOW_ALWAYS -> setAlwaysAllowed(pkgName)
                     UI_RESULT_DENY_ALWAYS -> setAlwaysDenied(pkgName)
                 }
 
+                // 转换成内部决策值
                 val resolvedDecision = when (resultCode) {
                     UI_RESULT_ALLOW_ONCE, UI_RESULT_ALLOW_ALWAYS -> DECISION_ALLOW
                     else -> DECISION_DENY
                 }
 
+                // 获取 PendingRequest 并设置结果
                 val pending = pendingRequests.remove(requestId)
                 if (pending == null || pending.timedOut) {
                     return
@@ -156,32 +225,49 @@ class HookNotifyService : Service() {
         }
     }
 
+    /**
+     * 超时请求的延迟清理，避免长时间占用 pendingRequests
+     */
     private fun scheduleCleanup(requestId: Long) {
         mainHandler.postDelayed({
             pendingRequests.remove(requestId)
         }, LATE_DECISION_GRACE_MS)
     }
 
+    /** ============================== 配置文件管理I/O ============================== */
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    /**
+     * 加载永久策略（允许/拒绝应用包名）
+     */
     private fun loadPolicy() {
-        synchronized(policyLock) {
-            alwaysAllowPackages = policyPrefs.getStringSet(KEY_ALWAYS_ALLOW, emptySet())?.toMutableSet() ?: mutableSetOf()
-            alwaysDenyPackages = policyPrefs.getStringSet(KEY_ALWAYS_DENY, emptySet())?.toMutableSet() ?: mutableSetOf()
+        serviceScope.launch {
+            val appPolicies = ClipboardPromptPrefs.getAppPolicies(this@HookNotifyService)
+            alwaysAllowPackages = appPolicies.filter { appPolicies.equals(ClipboardPromptPrefs.Policy.ALLOW) }.keys.toMutableSet()
+            alwaysDenyPackages = appPolicies.filter { appPolicies.equals(ClipboardPromptPrefs.Policy.ALLOW) }.keys.toMutableSet()
         }
     }
 
+    /**
+     * 将某个包名设置为永久允许
+     */
     private fun setAlwaysAllowed(pkgName: String) {
         synchronized(policyLock) {
             alwaysAllowPackages.add(pkgName)
             alwaysDenyPackages.remove(pkgName)
-            persistPolicyLocked()
+            persistPolicyLocked(pkgName, ClipboardPromptPrefs.Policy.ALLOW)
         }
     }
 
+    /**
+     * 将某个包名设置为永久拒绝
+     */
     private fun setAlwaysDenied(pkgName: String) {
         synchronized(policyLock) {
             alwaysDenyPackages.add(pkgName)
             alwaysAllowPackages.remove(pkgName)
-            persistPolicyLocked()
+            persistPolicyLocked(pkgName, ClipboardPromptPrefs.Policy.DENY)
         }
     }
 
@@ -197,10 +283,12 @@ class HookNotifyService : Service() {
         }
     }
 
-    private fun persistPolicyLocked() {
-        policyPrefs.edit {
-            putStringSet(KEY_ALWAYS_ALLOW, alwaysAllowPackages)
-            putStringSet(KEY_ALWAYS_DENY, alwaysDenyPackages)
+    /**
+     * 将策略持久化到 ClipboardPromptPrefs
+     */
+    private fun persistPolicyLocked(pkgName: String, policy: ClipboardPromptPrefs.Policy) {
+        serviceScope.launch {
+            ClipboardPromptPrefs.setAppPolicy(this@HookNotifyService, pkgName, policy)
         }
     }
 

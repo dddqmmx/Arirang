@@ -2,5 +2,6 @@
 <resources>
     <declare-styleable name="FeatureItemView">
         <attr name="featureName" format="string"/>
+        <attr name="featureIcon" format="reference"/>
     </declare-styleable>
 </resources>

@@ -17,7 +17,7 @@
     <string name="category_control">Control</string>
     <string name="category_audit">Audit</string>
 
-    <string name="feature_clipboard">Clipboard Access</string>
+    <string name="feature_clipboard">Clipboard</string>
     <string name="feature_sensor">Sensors</string>
 
     <string name="feature_device_info">Device Info</string>
@@ -80,4 +80,19 @@
     <string name="init_risk_item_rom">Untrusted ROM source</string>
     <string name="init_risk_item_kernel">Baseband or kernel tampered</string>
     <string name="init_risk_item_root">Root access controlled by malware</string>
+    <string name="user_region_title">region</string>
+    <string name="user_sponsor_title">sponsor</string>
+    <string name="user_sponsor_desc">"Support the development of **Arirang**. "</string>
+    <string name="user_sponsor_alipay">Alipay</string>
+    <string name="user_sponsor_wechat">WeChat</string>
+    <string name="user_sponsor_github">GitHub Sponsors</string>
+
+    <string name="permission_allow">Allow</string>
+    <string name="permission_deny">Deny</string>
+    <string name="permission_ask">Ask</string>
+    <string name="filter_all_apps">All Apps</string>
+    <string name="filter_user_apps">User Apps</string>
+    <string name="filter_system_apps">System Apps</string>
+    <string name="label_filter">Filter: </string>
+    <string name="label_mode">Mode: </string>
 </resources>

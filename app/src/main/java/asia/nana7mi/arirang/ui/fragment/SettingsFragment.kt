@@ -21,7 +21,7 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.findViewById<LinearLayout>(R.id.language_setting).setOnClickListener{
+        view.findViewById<View>(R.id.language_setting).setOnClickListener{
             val intent = Intent(requireContext(), LanguageSettingsActivity::class.java)
             startActivity(intent)
         }
