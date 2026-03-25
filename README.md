@@ -15,7 +15,7 @@ To achieve certain features, this software uses highly aggressive techniques at 
 - **Clipboard Protection**: Monitor and intercept clipboard access requests with real-time confirmation dialogs. (Currently available)
 - **Package List Management**: Hide specific installed applications from being detected by other apps (Invisible/Whitelist modes). (Not yet available)
 - **Device Info Masking**: Modify hardware identifiers and system properties. (Not yet available)
-- **Real-time Notifications**: Get notified or prompted when apps attempt to access sensitive data via the HookNotifyService. (Clipboard only)
+- **Real-time Permission Prompt**: Intercept clipboard access attempts and display a real-time confirmation dialog, allowing you to explicitly approve or deny each request. (Clipboard only)
 - **Modern UI**: Built with Material Design 3 and Dynamic Colors support.
 - **Multi-language Support**: Easily switch between supported languages.
 
