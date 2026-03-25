@@ -1,48 +1,69 @@
 # Arirang
 
-Arirang is a powerful Xposed module for Android designed to enhance user privacy by providing fine-grained control over sensitive system information and hooks. It allows you to mock device identifiers, location, SIM information, and manage app visibility.
+Arirang is named after a smartphone brand from North Korea.
+
+This is a powerful Xposed module for Android designed to enhance user privacy through fine-grained control over sensitive system information and runtime hooks. It allows spoofing of device identifiers, location, SIM information, and app visibility.
 
 ## ⚠️ Warning
 
-This software is currently in an early development stage. It may cause system instability, crashes, or unexpected behavior.
+This software is in an early development stage and may cause system instability, crashes, or unexpected behavior.
 
-To achieve certain features, this software uses highly aggressive techniques at the system level. As a result, it may never become fully stable or suitable for daily use. Use at your own risk.
+To achieve certain features, it uses highly aggressive system-level techniques. As a result, it may never become fully stable or suitable for daily use.
+
+Use at your own risk.
 
 ## 🚀 Features
 
-- **SIM Mocking**: Customize or hide SIM card details (IMSI, operator info, etc.) from apps. (Not yet available)
-- **Location** Spoofing: Provide mock GPS coordinates to specific applications. (Not yet available)
-- **Clipboard Protection**: Monitor and intercept clipboard access requests with real-time confirmation dialogs. (Currently available)
-- **Package List Management**: Hide specific installed applications from being detected by other apps (Invisible/Whitelist modes). (Not yet available)
-- **Device Info Masking**: Modify hardware identifiers and system properties. (Not yet available)
-- **Real-time Permission Prompt**: Intercept clipboard access attempts and display a real-time confirmation dialog, allowing you to explicitly approve or deny each request. (Clipboard only)
-- **Modern UI**: Built with Material Design 3 and Dynamic Colors support.
-- **Multi-language Support**: Easily switch between supported languages.
+- **Clipboard Protection (Available)**  
+  Monitor and intercept clipboard access requests with real-time confirmation dialogs.
+
+- **Real-time Permission Prompt (Available)**  
+  Intercept clipboard access attempts and explicitly allow or deny each request.
+
+- **SIM Mocking (Planned)**  
+  Customize or hide SIM card details (IMSI, operator info, etc.).
+
+- **Location Spoofing (Planned)**  
+  Provide mock GPS coordinates to selected applications.
+
+- **Package List Management (Planned)**  
+  Hide installed applications (Invisible / Whitelist modes).
+
+- **Device Info Masking (Planned)**  
+  Modify hardware identifiers and system properties.
+
+- **Modern UI**  
+  Built with Material Design 3 and Dynamic Colors support.
+
+- **Multi-language Support**
 
 ## 🛠 Requirements
 
-- A rooted Android device.
-- **LSPosed** or equivalent Xposed Framework installed.
-- Android 15recommended.
+- Rooted Android device  
+- **LSPosed** or compatible Xposed framework  
+- Android 15+ (recommended)
 
 ## 📦 Installation
 
-1. Download and install the latest `Arirang` APK.
-2. Open your Xposed Manager (e.g., LSPosed).
-3. Enable the **Arirang** module.
-4. Check the recommended applications from the list
-5. Reboot your device or restart the target applications.
+1. Install the latest `Arirang` APK  
+2. Open your Xposed Manager (e.g., LSPosed)  
+3. Enable the **Arirang** module  
+4. Select target applications to hook  
+5. Reboot your device or restart target apps  
 
 ## ⚙️ Configuration
 
-Open the Arirang app from your launcher to configure global settings and specific hooks:
+Open Arirang from your launcher:
 
-- **Clipboard Protection**: Monitor and intercept clipboard access requests with real-time confirmation dialogs.
+- **Clipboard Protection**  
+  Configure interception and confirmation behavior
 
 ## 🛡 Disclaimer
 
-This project is for **testing and educational purposes only**. Use it responsibly. The developers are not responsible for any misuse or damage caused by this software.
+This project is for **testing and educational purposes only**.
+
+The developers are not responsible for any damage, data loss, or misuse caused by this software.
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](link-to-your-issues).
+Contributions, issues, and feature requests are welcome.
