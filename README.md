@@ -4,8 +4,6 @@ Arirang is a powerful Xposed module for Android designed to enhance user privacy
 
 ## ⚠️ Warning
 
-⚠️ Warning
-
 This software is currently in an early development stage. It may cause system instability, crashes, or unexpected behavior.
 
 To achieve certain features, this software uses highly aggressive techniques at the system level. As a result, it may never become fully stable or suitable for daily use. Use at your own risk.
